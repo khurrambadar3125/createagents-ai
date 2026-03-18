@@ -22,7 +22,8 @@
 <!-- Canonical -->
 <link rel="canonical" href="https://createagents.ai/">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600;1,700&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="preload" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600;1,700&family=Outfit:wght@300;400;500;600;700;800&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
+<noscript><link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600;1,700&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"></noscript>
 <style>
 /* ═══════════════════════════════════════════════
    DESIGN SYSTEM — TERRACOTTA + CREAM
@@ -62,6 +63,16 @@ h2.serif.ondark{color:#fff}
 .lede{font-size:clamp(14px,1.8vw,17px);color:var(--muted);line-height:1.8;max-width:520px}
 .lede.dark{color:rgba(255,255,255,.55)}
 
+/* Content-visibility for offscreen sections */
+.gov-sec,.sen-sec,.lb-sec,.world-sec,.cases-sec,.testi-sec,.faq-sec,.disc-sec,.news-sec,.price-sec{content-visibility:auto;contain-intrinsic-size:auto 800px}
+
+/* Reduce motion for accessibility & perf */
+@media(prefers-reduced-motion:reduce){
+  *{animation-duration:.01s!important;transition-duration:.01s!important}
+  .mq-track,.ntick-inner{animation:none!important}
+  .hero-orb{animation:none!important}
+}
+
 /* Reveal */
 .rv{opacity:0;transform:translateY(18px);transition:opacity .5s ease,transform .5s ease}
 .rv.in{opacity:1;transform:none}
@@ -91,8 +102,8 @@ h2.serif.ondark{color:#fff}
 .g-btn:hover{background:#F8F9FA;border-color:#C6C8CA;box-shadow:0 2px 8px rgba(0,0,0,.12);transform:translateY(-1px)}
 .g-btn svg{flex-shrink:0}
 .g-btn-sm{padding:6px 13px;font-size:12px}
-#authModal{position:fixed;inset:0;z-index:10000;background:rgba(0,0,0,.55);display:none;align-items:center;justify-content:center;padding:18px;backdrop-filter:blur(4px)}
-#authModal.open{display:flex}
+#authModal{position:fixed;inset:0;z-index:10000;background:rgba(0,0,0,.55);display:none;align-items:center;justify-content:center;padding:18px}
+#authModal.open{display:flex;backdrop-filter:blur(4px)}
 .auth-box{background:#fff;border-radius:var(--r-2xl);padding:36px 28px;max-width:420px;width:100%;box-shadow:var(--shadow-lg);animation:fup .3s ease}
 .auth-logo{display:flex;align-items:center;justify-content:center;gap:9px;margin-bottom:22px}
 .auth-logo .logo-mk{width:38px;height:38px;font-size:17px}
@@ -116,8 +127,8 @@ h2.serif.ondark{color:#fff}
 .pp-btn svg{flex-shrink:0}
 .pp-btn-sm{padding:7px 14px;font-size:12px}
 /* Checkout modal */
-#checkoutModal{position:fixed;inset:0;z-index:10000;background:rgba(0,0,0,.55);display:none;align-items:center;justify-content:center;padding:18px;backdrop-filter:blur(4px)}
-#checkoutModal.open{display:flex}
+#checkoutModal{position:fixed;inset:0;z-index:10000;background:rgba(0,0,0,.55);display:none;align-items:center;justify-content:center;padding:18px}
+#checkoutModal.open{display:flex;backdrop-filter:blur(4px)}
 .co-box{background:#fff;border-radius:var(--r-2xl);padding:32px 26px;max-width:440px;width:100%;box-shadow:var(--shadow-lg);animation:fup .3s ease;position:relative}
 .co-h{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:700;color:var(--forest);margin-bottom:4px}
 .co-sub{font-size:13px;color:var(--muted);margin-bottom:22px;line-height:1.5}
@@ -171,11 +182,11 @@ h2.serif.ondark{color:#fff}
 .pm-actions{display:flex;flex-direction:column;align-items:center;gap:10px}
 .pm-skip{font-size:12px;color:rgba(255,255,255,.25);cursor:pointer;transition:color .15s}
 .pm-skip:hover{color:rgba(255,255,255,.5)}
-/* Persona card course preview */
-.pm-learn-label{display:none!important;/* hidden in modal */ font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,.28);margin-top:10px;display:block;text-align:center}
-.pm-courses{display:none!important;/* hidden in modal */ display:flex;flex-wrap:wrap;gap:4px;justify-content:center;margin-top:6px}
-.pm-ctag{display:none!important;/* hidden in modal for clean look */ font-size:9px;font-weight:600;padding:2px 7px;border-radius:100px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.09);color:rgba(255,255,255,.48);white-space:nowrap}
-.pm-card.sel .pm-ctag{display:none!important;/* hidden in modal for clean look */ background:rgba(196,75,44,.14);border-color:rgba(196,75,44,.25);color:var(--terra3)}
+/* Persona card course preview — hidden in modal */
+.pm-learn-label{display:none!important}
+.pm-courses{display:none!important}
+.pm-ctag{display:none!important}
+.pm-card.sel .pm-ctag{display:none!important}
 /* Persona university path banner */
 .uni-persona-path{background:linear-gradient(135deg,var(--forest),var(--forest2));border:1px solid rgba(255,255,255,.08);border-radius:var(--r-xl);padding:22px 20px;margin-bottom:22px;display:none;position:relative;overflow:hidden;transition:all .3s}
 .uni-persona-path.show{display:block}
@@ -236,8 +247,8 @@ nav.raised{box-shadow:var(--shadow)}
 @media(min-width:768px){.hero{padding:80px 0}}
 .hero-dots{position:absolute;inset:0;background-image:radial-gradient(rgba(27,58,45,.06) 1px,transparent 1px);background-size:28px 28px;pointer-events:none}
 .hero-orb{position:absolute;border-radius:50%;filter:blur(90px);pointer-events:none}
-.hero-orb.o1{width:480px;height:480px;background:rgba(196,75,44,.10);top:-120px;right:-100px;animation:orb 12s ease-in-out infinite}
-.hero-orb.o2{width:360px;height:360px;background:rgba(27,58,45,.07);bottom:-80px;left:-80px;animation:orb 15s 3s ease-in-out infinite}
+.hero-orb.o1{width:480px;height:480px;background:rgba(196,75,44,.10);top:-120px;right:-100px;animation:orb 12s ease-in-out infinite;will-change:transform,opacity}
+.hero-orb.o2{width:360px;height:360px;background:rgba(27,58,45,.07);bottom:-80px;left:-80px;animation:orb 15s 3s ease-in-out infinite;will-change:transform,opacity}
 @keyframes orb{0%,100%{transform:scale(1);opacity:.8}50%{transform:scale(1.18);opacity:.5}}
 .hero-inner{position:relative;z-index:1;width:100%}
 .hero-layout{display:flex;flex-direction:column;gap:40px}
@@ -280,7 +291,7 @@ nav.raised{box-shadow:var(--shadow)}
 ═══════════════════════════════════════════════ */
 .mq-strip{padding:28px 0;overflow:hidden;background:#fff;border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
 .mq-lbl{text-align:center;font-size:10px;text-transform:uppercase;letter-spacing:2px;color:var(--dim);font-weight:700;margin-bottom:14px}
-.mq-track{display:flex;gap:11px;animation:mq 32s linear infinite;width:max-content}
+.mq-track{display:flex;gap:11px;animation:mq 32s linear infinite;width:max-content;will-change:transform}
 @keyframes mq{from{transform:translateX(0)}to{transform:translateX(-50%)}}
 .mq-pill{padding:5px 14px;background:var(--cream2);border:1px solid var(--border);border-radius:100px;font-size:11px;font-weight:600;color:var(--muted);white-space:nowrap;display:flex;align-items:center;gap:4px}
 .mq-dot{width:5px;height:5px;border-radius:50%}
@@ -351,7 +362,7 @@ nav.raised{box-shadow:var(--shadow)}
 .she-right{flex-shrink:0;position:relative;z-index:1;margin-top:22px}
 @media(min-width:768px){.she-right{margin-top:0}}
 .she-myths{display:flex;flex-direction:column;gap:7px;min-width:280px}
-.sm-item{display:flex;align-items:center;gap:8px;padding:9px 12px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);border-radius:var(--r);backdrop-filter:blur(4px)}
+.sm-item{display:flex;align-items:center;gap:8px;padding:9px 12px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.12);border-radius:var(--r)}
 .sm-x{font-size:10px;font-weight:800;color:#FCA5A5;min-width:30px;text-align:center}
 .sm-myth{font-size:11px;color:rgba(255,255,255,.45);text-decoration:line-through}
 .sm-ck{font-size:10px;font-weight:800;color:#86EFAC;min-width:30px;text-align:center}
@@ -639,7 +650,7 @@ nav.raised{box-shadow:var(--shadow)}
 .disc-header{display:flex;align-items:center;gap:10px;margin-bottom:22px;cursor:pointer}
 .disc-header h3{font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:700;color:var(--forest)}
 .disc-toggle{font-size:11px;font-weight:700;color:var(--terra);text-transform:uppercase;letter-spacing:1px;padding:4px 10px;border:1px solid rgba(196,75,44,.25);border-radius:100px;margin-left:auto;cursor:pointer;background:none;font-family:'Outfit',sans-serif}
-.disc-grid{display:grid;grid-template-columns:1fr;gap:14px;display:none}
+.disc-grid{grid-template-columns:1fr;gap:14px;display:none}
 @media(min-width:640px){.disc-grid{grid-template-columns:repeat(2,1fr)}}
 @media(min-width:900px){.disc-grid{grid-template-columns:repeat(3,1fr)}}
 .disc-grid.open{display:grid}
@@ -659,7 +670,7 @@ nav.raised{box-shadow:var(--shadow)}
 .news-ticker{background:var(--forest);border-radius:var(--r);padding:9px 14px;margin-bottom:20px;display:flex;align-items:center;gap:10px;overflow:hidden}
 .ntick-label{font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:var(--terra3);background:var(--terra);padding:2px 7px;border-radius:100px;flex-shrink:0}
 .ntick-scroll{flex:1;overflow:hidden}
-.ntick-inner{display:flex;animation:tickscroll 32s linear infinite;white-space:nowrap}
+.ntick-inner{display:flex;animation:tickscroll 32s linear infinite;white-space:nowrap;will-change:transform}
 .ntick-inner:hover{animation-play-state:paused}
 @keyframes tickscroll{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
 .ntick-item{font-size:11px;color:rgba(255,255,255,.5);padding-right:40px;flex-shrink:0}
@@ -973,7 +984,7 @@ footer{background:var(--forest);border-top:1px solid rgba(255,255,255,.06);paddi
 .sen-sec{background:linear-gradient(180deg,#F8F4FF 0%,#F0EBFF 40%,#EBF5F0 100%);padding:80px 0;position:relative;overflow:hidden}
 @media(min-width:768px){.sen-sec{padding:110px 0}}
 /* Accessible: no flashing animations, calm transitions only */
-.sen-sec *{transition-duration:.2s!important}
+@media(prefers-reduced-motion:reduce){.sen-sec *{transition-duration:.01s!important;animation:none!important}}
 
 /* Eyebrow */
 .sen-eyebrow{display:inline-flex;align-items:center;gap:8px;background:linear-gradient(90deg,#EDE9FE,#E0F2FE);border:1.5px solid rgba(109,40,217,.15);border-radius:100px;padding:6px 16px;margin-bottom:18px}
@@ -1936,7 +1947,7 @@ footer{background:var(--forest);border-top:1px solid rgba(255,255,255,.06);paddi
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px" id="communityFeatures"></div>
 
     <div style="text-align:center;margin-top:40px">
-      <button class="btn btn-terra" onclick="showPaywall()" style="font-size:16px;padding:16px 36px">Join the Builder Community →</button>
+      <button class="btn btn-terra" onclick="openPaywall('community')" style="font-size:16px;padding:16px 36px">Join the Builder Community →</button>
     </div>
   </div>
 </section>
@@ -2089,7 +2100,7 @@ footer{background:var(--forest);border-top:1px solid rgba(255,255,255,.06);paddi
 
 <!-- CHATBOT -->
 <!-- PAYWALL MODAL -->
-<div id="pwModal" style="display:none;position:fixed;inset:0;z-index:10002;background:rgba(0,0,0,.6);backdrop-filter:blur(5px);align-items:center;justify-content:center;padding:16px">
+<div id="pwModal" style="display:none;position:fixed;inset:0;z-index:10002;background:rgba(0,0,0,.6);align-items:center;justify-content:center;padding:16px">
   <div id="pwInner" class="pw-body-wrap">
     <div class="pw-header">
       <div class="pw-header-inner">
@@ -3480,7 +3491,7 @@ const DISCLAIMERS = [
   {ico:'⚙️',t:'User Responsibility for Agent Deployment',p:'You are solely and entirely responsible for every agent you build, configure, deploy, or operate using this platform. This includes responsibility for ensuring your agents comply with all applicable laws, regulations, third-party terms of service, and ethical standards. You must not use CreateAgents.ai to build agents that engage in deception, harassment, illegal activities, market manipulation, spam, or any activity that violates applicable law. CreateAgents.ai reserves the right to suspend accounts engaged in prohibited use without notice.'},
   {ico:'🔗',t:'Third-Party Services & Integrations',p:'CreateAgents.ai integrates with independent third-party services including but not limited to Slack, HubSpot, Google Workspace, Shopify, Stripe, and others. We are not affiliated with, endorsed by, or responsible for any third-party service. We accept no liability for the availability, pricing, performance, security, or accuracy of any third-party service, or for any loss arising from changes to or discontinuation of any integration. You must independently comply with the terms, privacy policies, and applicable laws of each third-party service.'},
   {ico:'🌐',t:'Service Availability & Business Continuity',p:'While we target 99.9% uptime, CreateAgents.ai does not guarantee uninterrupted, error-free, or secure service availability. Scheduled maintenance, system updates, force majeure events, third-party infrastructure failures, or other circumstances may result in temporary or extended unavailability. We recommend implementing appropriate fallback procedures and not deploying CreateAgents.ai as a single point of failure in mission-critical workflows.'},
-  {ico:'👶',t:'Age Requirements & Parental Consent (COPPA / GDPR-K)',p:'This platform is not intended for children under the age of 13. Users aged 13–17 require verifiable parental or guardian consent before creating an account. By registering a minor user, the parent or guardian assumes full legal responsibility for that user's activity, the agents they create, and compliance with applicable child protection laws including COPPA (USA) and the UK Age Appropriate Design Code. We do not knowingly collect personal data from children under 13.'},
+  {ico:'👶',t:'Age Requirements & Parental Consent (COPPA / GDPR-K)',p:'This platform is not intended for children under the age of 13. Users aged 13–17 require verifiable parental or guardian consent before creating an account. By registering a minor user, the parent or guardian assumes full legal responsibility for that user\u2019s activity, the agents they create, and compliance with applicable child protection laws including COPPA (USA) and the UK Age Appropriate Design Code. We do not knowingly collect personal data from children under 13.'},
   {ico:'🏛️',t:'Government & Regulated Sector Users',p:'Government and public sector users are responsible for ensuring that any use of CreateAgents.ai complies with applicable procurement regulations, data sovereignty requirements, information security policies, and sector-specific legislation. CreateAgents.ai does not warrant compliance with any specific government framework. Government users should conduct their own due diligence and information security assessment before deployment.'},
   {ico:'📜',t:'Governing Law & Dispute Resolution',p:'These disclaimers and your use of CreateAgents.ai are governed by the laws of England and Wales (or the jurisdiction indicated in our full Terms of Service). Any disputes shall be resolved through binding arbitration before resorting to litigation, except where prohibited by law. Nothing in these disclaimers limits your statutory consumer rights where applicable law does not permit such limitation.'},
 ];
@@ -3561,6 +3572,14 @@ function upgradePlan(plan) {
 function updateChatSessionBar() {
   var bar = document.getElementById('chSessionBar');
   if(!bar) return;
+  // Use event delegation instead of attaching listeners on every render
+  if(!bar._delegated) {
+    bar.addEventListener('click', function(e) {
+      var pw = e.target.closest('[data-pw]');
+      if(pw) openPaywall(pw.dataset.pw);
+    });
+    bar._delegated = true;
+  }
   var d = getTrialData();
   if(isPaidUser()) {
     bar.style.cssText = 'padding:7px 13px;background:rgba(4,120,87,.06);border-bottom:1px solid var(--border);font-size:11px;color:var(--muted)';
@@ -3576,7 +3595,6 @@ function updateChatSessionBar() {
   if(trialExpired()) {
     bar.style.cssText = 'padding:7px 13px;background:rgba(196,75,44,.05);border-bottom:1px solid rgba(196,75,44,.15);font-size:11px';
     bar.innerHTML = '<span style="color:#F87171;font-weight:700">Trial ended</span> &middot; <a data-pw="expired" style="color:var(--terra);font-weight:700;cursor:pointer">Upgrade &#8599;</a>';
-    bar.querySelector('[data-pw]').addEventListener('click',function(){ openPaywall(this.dataset.pw); });
     return;
   }
   var used = d.sessions||0;
@@ -3593,9 +3611,6 @@ function updateChatSessionBar() {
     +'<div style="height:3px;background:rgba(0,0,0,.07);border-radius:3px;overflow:hidden">'
     +'<div style="height:100%;width:'+pct+'%;background:'+col+';border-radius:3px;transition:width .4s ease"></div></div>'
     +'<div style="margin-top:5px">'+trialLink+'</div>';
-  bar.querySelectorAll('[data-pw]').forEach(function(el){
-    el.addEventListener('click',function(){ openPaywall(this.dataset.pw); });
-  });
 }
 
 /* ── PAYWALL MODAL ── */
@@ -3609,12 +3624,13 @@ function openPaywall(trigger) {
   document.getElementById('pw-sub').textContent = sub;
   const m = document.getElementById('pwModal');
   m.style.display = 'flex';
+  m.style.backdropFilter = 'blur(5px)';
   requestAnimationFrame(()=>m.classList.add('pwopen'));
 }
 function closePaywall() {
   const m = document.getElementById('pwModal');
   m.classList.remove('pwopen');
-  setTimeout(()=>m.style.display='none', 300);
+  setTimeout(()=>{m.style.display='none';m.style.backdropFilter='none';}, 300);
 }
 
 /* ═══════════════════════════════════
@@ -3724,35 +3740,45 @@ function init() {
     persona = PERSONAS.find(p => p.id === savedP) || PERSONAS[0];
     applyPersona();
   }
+
+  // Phase 1: Above-the-fold critical renders (immediate)
   renderLangDrop();
-  renderPersonaModal();
-  renderGovernment();
-  renderSEN();
-  renderLittleBuilders();
   renderMarquee();
   renderVerticals();
   renderPersonaHub();
-  renderGZ();
-  renderShe();
-  renderWorld();
   renderAgentFilters();
   renderAgents();
-  renderUniPaths();
-  renderUniTabs();
-  renderCourses('beginner');
-  renderTeamBoard();
-  renderCommunity();
-  renderLLMTracks();
-  renderNews();
-  renderCases();
-  renderPricing();
-  renderTestimonials();
-  renderFAQ();
-  renderDisclaimers();
   renderChatChips(PERSONAS[0].chips);
   updateChatSessionBar();
   setupScrollReveal();
   setupNav();
+
+  // Phase 2: Below-the-fold renders (deferred to next frame)
+  requestAnimationFrame(() => {
+    renderPersonaModal();
+    renderGZ();
+    renderShe();
+    renderWorld();
+
+    // Phase 3: Heavy sections (deferred further)
+    requestAnimationFrame(() => {
+      renderGovernment();
+      renderSEN();
+      renderLittleBuilders();
+      renderUniPaths();
+      renderUniTabs();
+      renderCourses('beginner');
+      renderTeamBoard();
+      renderCommunity();
+      renderLLMTracks();
+      renderNews();
+      renderCases();
+      renderPricing();
+      renderTestimonials();
+      renderFAQ();
+      renderDisclaimers();
+    });
+  });
 }
 
 function renderMarquee() {
@@ -4060,7 +4086,7 @@ function clearTeam() {
 }
 function deployTeam() {
   if(myTeam.length === 0) { alert('Add some agents to your team first!'); return; }
-  showPaywall();
+  openPaywall('deploy');
 }
 function renderTeamBoard() {
   const board = document.getElementById('teamBoard');
@@ -4301,7 +4327,16 @@ function toggleDisc() {
    NAV & SCROLL
 ═══════════════════════════════════ */
 function setupNav() {
-  window.addEventListener('scroll', () => document.getElementById('mainNav').classList.toggle('raised', scrollY > 10));
+  let ticking = false;
+  window.addEventListener('scroll', () => {
+    if (!ticking) {
+      requestAnimationFrame(() => {
+        document.getElementById('mainNav').classList.toggle('raised', scrollY > 10);
+        ticking = false;
+      });
+      ticking = true;
+    }
+  }, {passive: true});
 }
 function toggleMob() {
   document.getElementById('hbg').classList.toggle('open');
@@ -4787,13 +4822,13 @@ async function doChat() {
     const left = sessionsLeft();
     if(left === 0 && !isPaidUser() && !isActiveTrial()) {
       setTimeout(() => {
-        addBotMsg('&#128161; <strong>All 5 free sessions used.</strong> Start your free 7-day trial — no card required. <a data-pw="empty" style="color:var(--terra);font-weight:700;cursor:pointer;text-decoration:underline">Start trial</a>');
-        document.querySelector('[data-pw="empty"]')?.addEventListener('click',function(){openPaywall('empty');});
+        const msg = addBotMsg('&#128161; <strong>All 5 free sessions used.</strong> Start your free 7-day trial — no card required. <a data-pw="empty" style="color:var(--terra);font-weight:700;cursor:pointer;text-decoration:underline">Start trial</a>');
+        msg.querySelector('[data-pw="empty"]')?.addEventListener('click',function(){openPaywall('empty');});
       }, 800);
     } else if(left === 1 && !isPaidUser() && !isActiveTrial()) {
       setTimeout(() => {
-        addBotMsg('&#9889; <strong>1 free session remaining.</strong> <a data-pw="trial" style="color:var(--terra);font-weight:700;cursor:pointer;text-decoration:underline">Start 7-day trial</a> for unlimited access.');
-        document.querySelector('[data-pw="trial"]')?.addEventListener('click',function(){openPaywall('trial');});
+        const msg = addBotMsg('&#9889; <strong>1 free session remaining.</strong> <a data-pw="trial" style="color:var(--terra);font-weight:700;cursor:pointer;text-decoration:underline">Start 7-day trial</a> for unlimited access.');
+        msg.querySelector('[data-pw="trial"]')?.addEventListener('click',function(){openPaywall('trial');});
       }, 800);
     }
     // ─────────────────────────────────────────────────────
@@ -4824,7 +4859,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 <!-- GDPR COOKIE CONSENT -->
-<div id="cookieBanner" style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:99999;background:var(--forest);color:#fff;padding:16px 24px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;border-top:2px solid var(--terra2);box-shadow:0 -4px 24px rgba(0,0,0,.3)">
+<div id="cookieBanner" style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:99999;background:var(--forest);color:#fff;padding:16px 24px;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;border-top:2px solid var(--terra2);box-shadow:0 -4px 24px rgba(0,0,0,.3)">
   <div style="flex:1;min-width:280px;font-size:13px;line-height:1.6">
     🍪 We use cookies to personalise your experience and analyse traffic. By continuing, you agree to our 
     <a href="#disclaimer" style="color:var(--terra3);text-decoration:underline">Privacy Policy</a>.
