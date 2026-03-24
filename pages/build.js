@@ -71,7 +71,7 @@ function BuildPage({ user, profile }) {
           <div className="space-y-6">
             <div>
               <h1 className="font-serif text-3xl font-bold text-forest mb-2">Build a New Agent</h1>
-              <p className="text-gray-400">Describe what you need in plain English. Claude will architect it.</p>
+              <p className="text-gray-400">Describe what you need in plain English. CreateAgent will architect it.</p>
             </div>
 
             <div>
@@ -127,7 +127,7 @@ function BuildPage({ user, profile }) {
               {loading ? (
                 <>
                   <div className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full" />
-                  Claude is architecting your agent...
+                  CreateAgent is architecting your agent...
                 </>
               ) : (
                 'Generate Agent Blueprint →'
@@ -141,7 +141,7 @@ function BuildPage({ user, profile }) {
           <div className="space-y-6">
             <div>
               <h1 className="font-serif text-3xl font-bold text-forest mb-2">Agent Blueprint</h1>
-              <p className="text-gray-400">Claude has architected your agent. Review the blueprint below.</p>
+              <p className="text-gray-400">Your agent blueprint is ready. Review it below.</p>
             </div>
 
             <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
