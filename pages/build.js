@@ -2,9 +2,11 @@ import { useState } from 'react'
 import { useRouter } from 'next/router'
 import Layout from '@/components/Layout'
 import withAuth from '@/lib/withAuth'
+import { useI18n } from '@/lib/i18n'
 import { VERTICALS, getVerticalEmoji } from '@/lib/utils'
 
 function BuildPage({ user, profile }) {
+  const { t } = useI18n()
   const router = useRouter()
   const [step, setStep] = useState(1)
   const [name, setName] = useState('')
@@ -83,9 +85,9 @@ function BuildPage({ user, profile }) {
             </div>
           ))}
           <div className="ml-4 text-sm text-gray-400">
-            {step === 1 && 'Tell us what you need'}
-            {step === 2 && 'Check & customise'}
-            {step === 3 && 'Ready to go!'}
+            {step === 1 && t('build_step1')}
+            {step === 2 && t('build_step2')}
+            {step === 3 && t('build_step3')}
           </div>
         </div>
 
@@ -93,12 +95,12 @@ function BuildPage({ user, profile }) {
         {step === 1 && (
           <div className="space-y-6">
             <div>
-              <h1 className="font-serif text-3xl font-bold text-forest mb-2">What do you need help with?</h1>
-              <p className="text-gray-400">Just describe it in your own words. We&apos;ll build it for you.</p>
+              <h1 className="font-serif text-3xl font-bold text-forest mb-2">{t('build_title')}</h1>
+              <p className="text-gray-400">{t('build_subtitle')}</p>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-forest mb-2">Give it a name</label>
+              <label className="block text-sm font-medium text-forest mb-2">{t('build_name_label')}</label>
               <input
                 type="text"
                 value={name}
@@ -110,7 +112,7 @@ function BuildPage({ user, profile }) {
 
             <div>
               <label className="block text-sm font-medium text-forest mb-2">
-                What should it do for you?
+                {t('build_desc_label')}
               </label>
               <textarea
                 value={description}
@@ -121,7 +123,7 @@ function BuildPage({ user, profile }) {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-forest mb-3">What area is this for?</label>
+              <label className="block text-sm font-medium text-forest mb-3">{t('build_vertical_label')}</label>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
                 {VERTICALS.map((v) => (
                   <button
@@ -150,10 +152,10 @@ function BuildPage({ user, profile }) {
               {loading ? (
                 <>
                   <div className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full" />
-                  Building your agent — just a moment...
+                  {t('build_generating')}
                 </>
               ) : (
-                'Build My Agent →'
+                `${t('build_submit')} →`
               )}
             </button>
           </div>
@@ -163,8 +165,8 @@ function BuildPage({ user, profile }) {
         {step === 2 && blueprint && (
           <div className="space-y-6">
             <div>
-              <h1 className="font-serif text-3xl font-bold text-forest mb-2">Here&apos;s your agent!</h1>
-              <p className="text-gray-400">We&apos;ve built it for you. Feel free to change anything below, or go ahead and launch it.</p>
+              <h1 className="font-serif text-3xl font-bold text-forest mb-2">{t('build_result_title')}</h1>
+              <p className="text-gray-400">{t('build_result_subtitle')}</p>
             </div>
 
             <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
@@ -200,7 +202,7 @@ function BuildPage({ user, profile }) {
 
               {/* Steps */}
               <div className="p-6 border-b border-gray-50">
-                <h3 className="text-sm font-medium text-forest mb-3 uppercase tracking-wider">What it will do</h3>
+                <h3 className="text-sm font-medium text-forest mb-3 uppercase tracking-wider">{t('build_steps_label')}</h3>
                 <div className="space-y-2">
                   {(blueprint.steps || []).map((s, i) => (
                     <div key={i} className="flex items-start gap-3">
@@ -239,7 +241,7 @@ function BuildPage({ user, profile }) {
               {/* Integrations */}
               {blueprint.integrations?.length > 0 && (
                 <div className="p-6 border-b border-gray-50">
-                  <h3 className="text-sm font-medium text-forest mb-3 uppercase tracking-wider">Tools it connects to</h3>
+                  <h3 className="text-sm font-medium text-forest mb-3 uppercase tracking-wider">{t('build_integrations_label')}</h3>
                   <div className="flex flex-wrap gap-2">
                     {blueprint.integrations.map((int, i) => (
                       <span key={i} className="px-3 py-1 bg-cream rounded-full text-xs text-forest font-medium flex items-center gap-1">
@@ -279,7 +281,7 @@ function BuildPage({ user, profile }) {
                 onClick={() => setStep(1)}
                 className="px-6 py-3 border border-gray-200 rounded-xl text-sm font-medium text-gray-500 hover:bg-gray-50 transition-all"
               >
-                ← Back
+                {`← ${t('back')}`}
               </button>
               <button
                 onClick={handleGenerate}
@@ -292,7 +294,7 @@ function BuildPage({ user, profile }) {
                     Regenerating...
                   </>
                 ) : (
-                  '↻ Try Again'
+                  `↻ ${t('build_try_again')}`
                 )}
               </button>
               <button
@@ -306,7 +308,7 @@ function BuildPage({ user, profile }) {
                     Saving...
                   </>
                 ) : (
-                  'Launch My Agent →'
+                  `${t('build_launch')} →`
                 )}
               </button>
             </div>
@@ -318,7 +320,7 @@ function BuildPage({ user, profile }) {
           <div className="text-center py-12 space-y-6">
             <div className="text-6xl">🎉</div>
             <h1 className="font-serif text-4xl font-bold text-forest">
-              You&apos;re all set!
+              {t('build_done_title')}
             </h1>
             <p className="text-gray-400 max-w-md mx-auto">
               <strong className="text-forest">{name}</strong> is ready. Just give it a task
@@ -329,13 +331,13 @@ function BuildPage({ user, profile }) {
                 onClick={() => router.push(`/agent/${agentId}`)}
                 className="px-10 py-3.5 bg-terracotta text-white rounded-xl font-medium text-sm hover:bg-terracotta/90 transition-all"
               >
-                Try It Now →
+                {t('build_try_now')} →
               </button>
               <button
                 onClick={() => router.push('/dashboard')}
                 className="text-sm text-gray-400 hover:text-forest transition-colors"
               >
-                or go to My Agents
+                {t('build_go_agents')}
               </button>
             </div>
           </div>

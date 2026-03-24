@@ -3,10 +3,12 @@ import { useRouter } from 'next/router'
 import Link from 'next/link'
 import Layout from '@/components/Layout'
 import withAuth from '@/lib/withAuth'
+import { useI18n } from '@/lib/i18n'
 import { supabase } from '@/lib/supabase'
 import { getVerticalEmoji, getVerticalLabel, formatDate, statusColor } from '@/lib/utils'
 
 function AgentPage({ user, profile }) {
+  const { t } = useI18n()
   const router = useRouter()
   const { id } = router.query
   const [agent, setAgent] = useState(null)
@@ -220,10 +222,10 @@ function AgentPage({ user, profile }) {
         {/* Tabs */}
         <div className="flex gap-1 bg-gray-100 rounded-xl p-1">
           {[
-            { key: 'chat', label: 'Chat' },
-            { key: 'history', label: 'History' },
-            { key: 'deploy', label: 'Use Anywhere' },
-            { key: 'config', label: 'Settings' },
+            { key: 'chat', label: t('agent_chat') },
+            { key: 'history', label: t('agent_history') },
+            { key: 'deploy', label: t('agent_deploy') },
+            { key: 'config', label: t('agent_config') },
           ].map((t) => (
             <button
               key={t.key}
@@ -250,7 +252,7 @@ function AgentPage({ user, profile }) {
                   {config.use_case && (
                     <p className="text-xs text-terracotta/60 italic mb-6">&quot;{config.use_case}&quot;</p>
                   )}
-                  <p className="text-xs text-gray-300">Type a message below to get started. I&apos;ll remember our whole conversation.</p>
+                  <p className="text-xs text-gray-300">{t('agent_memory')}</p>
                 </div>
               )}
 
@@ -290,7 +292,7 @@ function AgentPage({ user, profile }) {
                 <div className="flex justify-start">
                   <div className="bg-cream rounded-2xl rounded-bl-md px-4 py-3 flex items-center gap-2 text-sm text-gray-400">
                     <div className="animate-spin w-3.5 h-3.5 border-2 border-terracotta border-t-transparent rounded-full" />
-                    Working on it...
+                    {t('agent_working')}
                   </div>
                 </div>
               )}

@@ -2,9 +2,11 @@ import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/router'
 import Head from 'next/head'
 import { supabase } from '@/lib/supabase'
+import { useI18n } from '@/lib/i18n'
 import { getVerticalEmoji } from '@/lib/utils'
 
 export default function SharePage() {
+  const { t } = useI18n()
   const router = useRouter()
   const { id } = router.query
   const [agent, setAgent] = useState(null)
@@ -145,9 +147,9 @@ export default function SharePage() {
             {messages.length === 0 && !streamingText && (
               <div className="text-center py-12">
                 <div className="text-4xl mb-4">{agent.config?.emoji || getVerticalEmoji(agent.vertical)}</div>
-                <h2 className="font-serif text-2xl font-bold text-forest mb-2">Hi! I&apos;m {agent.name}</h2>
+                <h2 className="font-serif text-2xl font-bold text-forest mb-2">{t('share_hi')} {agent.name}</h2>
                 <p className="text-gray-400 text-sm max-w-md mx-auto mb-4">{agent.description}</p>
-                <p className="text-xs text-gray-300">I&apos;ll remember everything we talk about in this conversation.</p>
+                <p className="text-xs text-gray-300">{t('share_memory')}</p>
               </div>
             )}
 

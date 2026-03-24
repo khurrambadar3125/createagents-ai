@@ -22,6 +22,11 @@
   animation: slide-up 0.3s ease-out;
 }
 
+/* RTL support */
+[dir="rtl"] { text-align: right; }
+[dir="rtl"] .text-left { text-align: right; }
+[dir="rtl"] .text-right { text-align: left; }
+
 /* Scrollbar */
 ::-webkit-scrollbar { width: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }
