@@ -305,6 +305,90 @@ function AgentPage({ user, profile }) {
           </div>
         )}
 
+        {/* Deploy / Share */}
+        <div>
+          <h2 className="font-serif text-lg font-bold text-forest mb-3">Use This Agent Anywhere</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {/* Share Link */}
+            <div className="bg-white rounded-2xl border border-gray-100 p-5">
+              <div className="text-2xl mb-2">🔗</div>
+              <h3 className="font-serif text-sm font-bold text-forest mb-1">Share Link</h3>
+              <p className="text-xs text-gray-400 mb-3">Anyone with this link can use your agent — no sign-up needed.</p>
+              <div className="flex gap-2">
+                <input
+                  readOnly
+                  value={`${typeof window !== 'undefined' ? window.location.origin : 'https://createagents.ai'}/share/${id}`}
+                  className="flex-1 px-3 py-2 bg-cream rounded-lg text-xs text-forest truncate outline-none"
+                />
+                <button
+                  onClick={() => {
+                    navigator.clipboard.writeText(`${window.location.origin}/share/${id}`)
+                    setCopied(true)
+                    setTimeout(() => setCopied(false), 2000)
+                  }}
+                  className="px-3 py-2 bg-forest text-cream rounded-lg text-xs font-medium hover:bg-forest/90 transition-all whitespace-nowrap"
+                >
+                  {copied ? '✓ Copied' : 'Copy'}
+                </button>
+              </div>
+              <a
+                href={`/share/${id}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block mt-3 text-xs text-terracotta hover:underline"
+              >
+                Open in new tab →
+              </a>
+            </div>
+
+            {/* API */}
+            <div className="bg-white rounded-2xl border border-gray-100 p-5">
+              <div className="text-2xl mb-2">⚡</div>
+              <h3 className="font-serif text-sm font-bold text-forest mb-1">API Endpoint</h3>
+              <p className="text-xs text-gray-400 mb-3">Call your agent from any app, website, or automation tool.</p>
+              <div className="bg-forest/5 rounded-lg p-3 text-xs font-mono text-forest overflow-x-auto">
+                <div className="text-gray-400 mb-1">POST /api/v1/run</div>
+                <div className="whitespace-pre">{`{
+  "agent_id": "${id}",
+  "user_input": "your message"
+}`}</div>
+              </div>
+              <button
+                onClick={() => {
+                  navigator.clipboard.writeText(`curl -X POST ${window.location.origin}/api/v1/run \\
+  -H "Content-Type: application/json" \\
+  -d '{"agent_id": "${id}", "user_input": "Hello"}'`)
+                  setCopied(true)
+                  setTimeout(() => setCopied(false), 2000)
+                }}
+                className="mt-3 text-xs text-terracotta hover:underline"
+              >
+                Copy cURL command
+              </button>
+            </div>
+
+            {/* Embed */}
+            <div className="bg-white rounded-2xl border border-gray-100 p-5">
+              <div className="text-2xl mb-2">📦</div>
+              <h3 className="font-serif text-sm font-bold text-forest mb-1">Embed on Your Website</h3>
+              <p className="text-xs text-gray-400 mb-3">Add a chat bubble to any website with one line of code.</p>
+              <div className="bg-forest/5 rounded-lg p-3 text-xs font-mono text-forest overflow-x-auto">
+                <div className="break-all">{`<script src="${typeof window !== 'undefined' ? window.location.origin : 'https://createagents.ai'}/embed.js" data-agent-id="${id}"></script>`}</div>
+              </div>
+              <button
+                onClick={() => {
+                  navigator.clipboard.writeText(`<script src="${window.location.origin}/embed.js" data-agent-id="${id}"></script>`)
+                  setCopied(true)
+                  setTimeout(() => setCopied(false), 2000)
+                }}
+                className="mt-3 text-xs text-terracotta hover:underline"
+              >
+                Copy embed code
+              </button>
+            </div>
+          </div>
+        </div>
+
         {/* Config Toggle */}
         {agent.config && (
           <div>
