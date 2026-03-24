@@ -141,31 +141,75 @@ function BuildPage({ user, profile }) {
           <div className="space-y-6">
             <div>
               <h1 className="font-serif text-3xl font-bold text-forest mb-2">Agent Blueprint</h1>
-              <p className="text-gray-400">Your agent blueprint is ready. Review it below.</p>
+              <p className="text-gray-400">Review and customise your agent before deploying.</p>
             </div>
 
             <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
-              {/* Purpose */}
+              {/* Editable Name & Purpose */}
               <div className="p-6 border-b border-gray-50">
                 <div className="flex items-center gap-3 mb-3">
                   <span className="text-2xl">{getVerticalEmoji(vertical)}</span>
-                  <h2 className="font-serif text-xl font-bold text-forest">{name}</h2>
+                  <input
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    className="font-serif text-xl font-bold text-forest bg-transparent outline-none border-b border-transparent focus:border-terracotta w-full"
+                  />
                 </div>
-                <p className="text-sm text-gray-500 leading-relaxed">{blueprint.purpose}</p>
+                <label className="text-xs text-gray-400 uppercase tracking-wider mb-1 block">Purpose</label>
+                <textarea
+                  value={blueprint.purpose || ''}
+                  onChange={(e) => setBlueprint({ ...blueprint, purpose: e.target.value })}
+                  className="w-full text-sm text-gray-500 leading-relaxed bg-transparent outline-none border border-transparent focus:border-gray-200 rounded-lg p-2 resize-none"
+                  rows={3}
+                />
+              </div>
+
+              {/* Editable Description */}
+              <div className="p-6 border-b border-gray-50">
+                <label className="text-xs text-gray-400 uppercase tracking-wider mb-2 block">Agent Description</label>
+                <textarea
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  className="w-full text-sm text-gray-600 bg-cream/50 rounded-xl p-3 outline-none border border-transparent focus:border-terracotta/30 resize-none"
+                  rows={2}
+                />
               </div>
 
               {/* Steps */}
               <div className="p-6 border-b border-gray-50">
                 <h3 className="text-sm font-medium text-forest mb-3 uppercase tracking-wider">How it works</h3>
-                <div className="space-y-3">
+                <div className="space-y-2">
                   {(blueprint.steps || []).map((s, i) => (
                     <div key={i} className="flex items-start gap-3">
-                      <div className="w-6 h-6 rounded-full bg-terracotta/10 text-terracotta flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">
+                      <div className="w-6 h-6 rounded-full bg-terracotta/10 text-terracotta flex items-center justify-center text-xs font-bold flex-shrink-0 mt-1">
                         {i + 1}
                       </div>
-                      <span className="text-sm text-gray-600">{s}</span>
+                      <input
+                        value={s}
+                        onChange={(e) => {
+                          const newSteps = [...blueprint.steps]
+                          newSteps[i] = e.target.value
+                          setBlueprint({ ...blueprint, steps: newSteps })
+                        }}
+                        className="flex-1 text-sm text-gray-600 bg-transparent outline-none border-b border-transparent focus:border-gray-200 py-1"
+                      />
+                      <button
+                        onClick={() => {
+                          const newSteps = blueprint.steps.filter((_, j) => j !== i)
+                          setBlueprint({ ...blueprint, steps: newSteps })
+                        }}
+                        className="text-gray-300 hover:text-red-400 text-xs mt-1"
+                      >
+                        ✕
+                      </button>
                     </div>
                   ))}
+                  <button
+                    onClick={() => setBlueprint({ ...blueprint, steps: [...(blueprint.steps || []), ''] })}
+                    className="text-xs text-terracotta hover:underline mt-1"
+                  >
+                    + Add step
+                  </button>
                 </div>
               </div>
 
@@ -175,8 +219,17 @@ function BuildPage({ user, profile }) {
                   <h3 className="text-sm font-medium text-forest mb-3 uppercase tracking-wider">Integrations</h3>
                   <div className="flex flex-wrap gap-2">
                     {blueprint.integrations.map((int, i) => (
-                      <span key={i} className="px-3 py-1 bg-cream rounded-full text-xs text-forest font-medium">
+                      <span key={i} className="px-3 py-1 bg-cream rounded-full text-xs text-forest font-medium flex items-center gap-1">
                         {int}
+                        <button
+                          onClick={() => {
+                            const newInt = blueprint.integrations.filter((_, j) => j !== i)
+                            setBlueprint({ ...blueprint, integrations: newInt })
+                          }}
+                          className="text-gray-300 hover:text-red-400 ml-1"
+                        >
+                          ✕
+                        </button>
                       </span>
                     ))}
                   </div>
@@ -197,12 +250,27 @@ function BuildPage({ user, profile }) {
               )}
             </div>
 
+            {/* Action buttons */}
             <div className="flex gap-3">
               <button
                 onClick={() => setStep(1)}
                 className="px-6 py-3 border border-gray-200 rounded-xl text-sm font-medium text-gray-500 hover:bg-gray-50 transition-all"
               >
                 ← Back
+              </button>
+              <button
+                onClick={handleGenerate}
+                disabled={loading}
+                className="px-6 py-3 border border-terracotta/30 rounded-xl text-sm font-medium text-terracotta hover:bg-terracotta/5 transition-all flex items-center gap-2"
+              >
+                {loading ? (
+                  <>
+                    <div className="animate-spin w-3.5 h-3.5 border-2 border-terracotta border-t-transparent rounded-full" />
+                    Regenerating...
+                  </>
+                ) : (
+                  '↻ Regenerate'
+                )}
               </button>
               <button
                 onClick={() => setStep(3)}
