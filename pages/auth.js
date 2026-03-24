@@ -37,7 +37,14 @@ export default function AuthPage() {
       if (signInError) {
         setError(signInError.message)
       } else {
-        router.push('/dashboard')
+        // Check for deploy intent from landing page
+        const deployIntent = typeof window !== 'undefined' && localStorage.getItem('deploy_intent')
+        if (deployIntent) {
+          localStorage.removeItem('deploy_intent')
+          router.push(`/?deploy=${deployIntent}`)
+        } else {
+          router.push('/dashboard')
+        }
       }
     }
     setLoading(false)

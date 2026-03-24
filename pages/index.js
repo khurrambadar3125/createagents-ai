@@ -8,6 +8,35 @@ export default function Home() {
   useEffect(() => {
     async function redirect() {
       const { data: { session } } = await supabase.auth.getSession()
+
+      // Handle deploy intent from landing page
+      const deploySlug = router.query.deploy
+      if (deploySlug) {
+        if (session) {
+          // User is logged in — deploy the agent
+          try {
+            const res = await fetch('/api/agents/deploy-by-slug', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ slug: deploySlug, owner_id: session.user.id }),
+            })
+            const data = await res.json()
+            if (res.ok && data.id) {
+              router.replace(`/agent/${data.id}`)
+              return
+            }
+          } catch {}
+          router.replace('/dashboard')
+        } else {
+          // Store intent and redirect to auth
+          if (typeof window !== 'undefined') {
+            localStorage.setItem('deploy_intent', deploySlug)
+          }
+          router.replace('/auth')
+        }
+        return
+      }
+
       router.replace(session ? '/dashboard' : '/auth')
     }
     redirect()

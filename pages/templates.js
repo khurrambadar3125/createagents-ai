@@ -12,7 +12,10 @@ function TemplatesPage({ user, profile }) {
   const [deploying, setDeploying] = useState(null)
   const [search, setSearch] = useState('')
   const [vertical, setVertical] = useState('')
-  const [difficulty, setDifficulty] = useState('')
+  const [complexity, setComplexity] = useState('')
+  const [b2bFilter, setB2bFilter] = useState('all')
+  const [sort, setSort] = useState('popular')
+  const [toast, setToast] = useState(null)
 
   useEffect(() => {
     async function load() {
@@ -27,95 +30,187 @@ function TemplatesPage({ user, profile }) {
     load()
   }, [])
 
+  // Handle auto-deploy from landing page ?deploy= param
+  useEffect(() => {
+    if (!router.query.deploy || templates.length === 0) return
+    const slug = router.query.deploy
+    const match = templates.find(
+      (t) => t.name.toLowerCase().replace(/[^a-z0-9]+/g, '-') === slug
+    )
+    if (match) handleDeploy(match)
+  }, [router.query.deploy, templates])
+
   const filtered = useMemo(() => {
-    return templates.filter((t) => {
+    let result = templates.filter((t) => {
+      const s = search.toLowerCase()
       const matchSearch =
         !search ||
-        t.name.toLowerCase().includes(search.toLowerCase()) ||
-        t.description.toLowerCase().includes(search.toLowerCase())
-      const matchVertical = !vertical || t.vertical === vertical || t.config?.verticals?.includes(vertical)
-      const matchDifficulty = !difficulty || t.config?.difficulty === difficulty
-      return matchSearch && matchVertical && matchDifficulty
+        t.name.toLowerCase().includes(s) ||
+        t.description.toLowerCase().includes(s) ||
+        (t.config?.tags || []).some((tag) => tag.toLowerCase().includes(s))
+      const matchVertical = !vertical || t.vertical === vertical || (t.config?.verticals || []).includes(vertical)
+      const matchComplexity = !complexity || t.config?.complexity === complexity
+      const matchB2b = b2bFilter === 'all' || t.config?.b2b_b2c === b2bFilter || t.config?.b2b_b2c === 'both'
+      return matchSearch && matchVertical && matchComplexity && matchB2b
     })
-  }, [templates, search, vertical, difficulty])
+
+    // Sort
+    if (sort === 'popular') result.sort((a, b) => (b.config?.usage || '').localeCompare(a.config?.usage || ''))
+    else if (sort === 'name') result.sort((a, b) => a.name.localeCompare(b.name))
+    else if (sort === 'time-saved') result.sort((a, b) => {
+      const getHours = (s) => parseInt(s?.replace(/\D/g, '') || '0')
+      return getHours(b.config?.time_saved) - getHours(a.config?.time_saved)
+    })
+
+    return result
+  }, [templates, search, vertical, complexity, b2bFilter, sort])
 
   async function handleDeploy(template) {
     setDeploying(template.id)
     try {
-      const res = await fetch('/api/agents/copy', {
+      const res = await fetch('/api/agents/deploy-template', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ template_id: template.id, owner_id: user.id }),
       })
       const data = await res.json()
-      if (!res.ok) throw new Error(data.error)
+      if (!res.ok) {
+        if (data.error === 'agent_limit_reached') {
+          router.push('/pricing')
+          return
+        }
+        throw new Error(data.error || data.message)
+      }
       router.push(`/agent/${data.id}`)
     } catch (err) {
-      alert(err.message || 'Failed to deploy template')
+      setToast(err.message || 'Failed to deploy')
+      setTimeout(() => setToast(null), 3000)
       setDeploying(null)
     }
   }
 
+  const totalIntegrations = new Set(templates.flatMap((t) => t.config?.integrations || []))
+  const avgTimeSaved = templates.length
+    ? Math.round(templates.reduce((s, t) => s + parseInt((t.config?.time_saved || '0').replace(/\D/g, '') || '0'), 0) / templates.length)
+    : 0
+
   return (
     <Layout user={user} profile={profile}>
       <div className="space-y-6">
-        {/* Header */}
-        <div>
-          <h1 className="font-serif text-3xl font-bold text-forest">Agent Library</h1>
-          <p className="text-gray-400 text-sm mt-1">
-            80+ pre-built agents ready to deploy. One click and it&apos;s yours.
+        {/* Hero */}
+        <div className="bg-forest rounded-2xl p-8 md:p-10 text-cream">
+          <h1 className="font-serif text-3xl md:text-4xl font-bold mb-2">
+            {templates.length} World-Class AI Agents.
+            <span className="text-terracotta"> Ready in one click.</span>
+          </h1>
+          <p className="text-cream/60 text-sm max-w-xl">
+            Each agent comes with a production-grade system prompt, real integrations, and deep industry expertise.
+            Deploy to your workspace and start running immediately.
           </p>
-        </div>
-
-        {/* Filters */}
-        <div className="flex flex-col md:flex-row gap-3">
-          <div className="flex-1">
-            <input
-              type="text"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search agents by name or description..."
-              className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:border-terracotta focus:ring-2 focus:ring-terracotta/20 outline-none text-sm"
-            />
+          <div className="flex flex-wrap gap-6 mt-6 text-sm">
+            <span className="text-cream/50"><strong className="text-cream">{templates.length}</strong> agents</span>
+            <span className="text-cream/50"><strong className="text-cream">{VERTICALS.length}</strong> verticals</span>
+            <span className="text-cream/50"><strong className="text-cream">{totalIntegrations.size}+</strong> integrations</span>
+            <span className="text-cream/50">avg <strong className="text-cream">{avgTimeSaved}hrs/week</strong> saved</span>
           </div>
-          <select
-            value={vertical}
-            onChange={(e) => setVertical(e.target.value)}
-            className="px-4 py-2.5 rounded-xl border border-gray-200 text-sm outline-none focus:border-terracotta"
-          >
-            <option value="">All Verticals</option>
-            {VERTICALS.map((v) => (
-              <option key={v.key} value={v.key}>
-                {v.emoji} {v.label}
-              </option>
-            ))}
-          </select>
-          <select
-            value={difficulty}
-            onChange={(e) => setDifficulty(e.target.value)}
-            className="px-4 py-2.5 rounded-xl border border-gray-200 text-sm outline-none focus:border-terracotta"
-          >
-            <option value="">All Levels</option>
-            <option value="easy">Easy</option>
-            <option value="medium">Medium</option>
-            <option value="advanced">Advanced</option>
-          </select>
         </div>
 
-        {/* Count */}
-        <div className="text-sm text-gray-400">
-          Showing {filtered.length} of {templates.length} agents
+        {/* Search */}
+        <div className="relative">
+          <svg className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <circle cx="11" cy="11" r="8" strokeWidth="2" />
+            <path d="m21 21-4.35-4.35" strokeWidth="2" strokeLinecap="round" />
+          </svg>
+          <input
+            type="text"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search agents by name, description, or tag..."
+            className="w-full pl-12 pr-4 py-3.5 rounded-2xl border border-gray-200 focus:border-terracotta focus:ring-2 focus:ring-terracotta/20 outline-none text-sm bg-white"
+          />
+        </div>
+
+        {/* Filter Pills */}
+        <div className="space-y-3">
+          {/* Verticals */}
+          <div className="flex flex-wrap gap-2">
+            <button
+              onClick={() => setVertical('')}
+              className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${!vertical ? 'bg-terracotta text-white' : 'bg-white border border-gray-200 text-gray-500 hover:border-gray-300'}`}
+            >
+              All
+            </button>
+            {VERTICALS.map((v) => (
+              <button
+                key={v.key}
+                onClick={() => setVertical(vertical === v.key ? '' : v.key)}
+                className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${vertical === v.key ? 'bg-terracotta text-white' : 'bg-white border border-gray-200 text-gray-500 hover:border-gray-300'}`}
+              >
+                {v.emoji} {v.label}
+              </button>
+            ))}
+          </div>
+
+          {/* Secondary filters */}
+          <div className="flex flex-wrap gap-3">
+            {/* B2B/B2C */}
+            <div className="flex bg-white border border-gray-200 rounded-xl overflow-hidden">
+              {['all', 'b2b', 'b2c'].map((v) => (
+                <button
+                  key={v}
+                  onClick={() => setB2bFilter(v)}
+                  className={`px-3 py-1.5 text-xs font-medium transition-all ${b2bFilter === v ? 'bg-forest text-cream' : 'text-gray-500 hover:bg-gray-50'}`}
+                >
+                  {v === 'all' ? 'All' : v.toUpperCase()}
+                </button>
+              ))}
+            </div>
+
+            {/* Complexity */}
+            <select
+              value={complexity}
+              onChange={(e) => setComplexity(e.target.value)}
+              className="px-3 py-1.5 rounded-xl border border-gray-200 text-xs outline-none focus:border-terracotta"
+            >
+              <option value="">All Levels</option>
+              <option value="starter">Starter</option>
+              <option value="professional">Professional</option>
+              <option value="enterprise">Enterprise</option>
+            </select>
+
+            {/* Sort */}
+            <select
+              value={sort}
+              onChange={(e) => setSort(e.target.value)}
+              className="px-3 py-1.5 rounded-xl border border-gray-200 text-xs outline-none focus:border-terracotta"
+            >
+              <option value="popular">Popular</option>
+              <option value="name">A-Z</option>
+              <option value="time-saved">Time Saved</option>
+            </select>
+
+            <span className="text-xs text-gray-400 self-center ml-auto">
+              {filtered.length} of {templates.length} agents
+            </span>
+          </div>
         </div>
 
         {/* Grid */}
         {loading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {[1, 2, 3, 4, 5, 6].map((i) => (
+            {Array.from({ length: 6 }).map((_, i) => (
               <div key={i} className="bg-white rounded-2xl border border-gray-100 p-5 animate-pulse">
-                <div className="w-11 h-11 bg-gray-100 rounded-xl mb-3" />
-                <div className="h-5 bg-gray-100 rounded w-2/3 mb-2" />
+                <div className="flex items-start justify-between mb-3">
+                  <div className="w-11 h-11 bg-gray-100 rounded-xl" />
+                  <div className="w-16 h-5 bg-gray-100 rounded-full" />
+                </div>
+                <div className="h-5 bg-gray-100 rounded w-3/4 mb-2" />
                 <div className="h-4 bg-gray-50 rounded w-full mb-1" />
-                <div className="h-4 bg-gray-50 rounded w-1/2" />
+                <div className="h-4 bg-gray-50 rounded w-2/3 mb-4" />
+                <div className="flex gap-1 mb-3">
+                  {[1, 2, 3].map((j) => <div key={j} className="w-16 h-5 bg-gray-50 rounded" />)}
+                </div>
+                <div className="h-9 bg-gray-100 rounded-xl" />
               </div>
             ))}
           </div>
@@ -123,88 +218,99 @@ function TemplatesPage({ user, profile }) {
           <div className="bg-white rounded-2xl border border-gray-100 p-12 text-center">
             <div className="text-4xl mb-3">🔍</div>
             <h3 className="font-serif text-lg font-bold text-forest mb-2">No agents found</h3>
-            <p className="text-sm text-gray-400">Try adjusting your search or filters.</p>
+            <p className="text-sm text-gray-400 mb-4">Try different keywords or filters.</p>
+            <div className="flex flex-wrap justify-center gap-2">
+              {['invoice', 'support', 'seo', 'contract', 'onboarding'].map((s) => (
+                <button key={s} onClick={() => setSearch(s)} className="px-3 py-1 bg-cream rounded-full text-xs text-forest hover:bg-gray-100 transition-colors">
+                  {s}
+                </button>
+              ))}
+            </div>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {filtered.map((template) => (
+            {filtered.map((t) => (
               <div
-                key={template.id}
-                className="bg-white rounded-2xl border border-gray-100 p-5 hover:shadow-lg hover:border-terracotta/20 transition-all group"
+                key={t.id}
+                className="bg-white rounded-2xl border border-gray-100 p-5 hover:shadow-lg hover:border-terracotta/20 transition-all group flex flex-col"
               >
                 {/* Header */}
                 <div className="flex items-start justify-between mb-3">
                   <div className="w-11 h-11 rounded-xl bg-cream flex items-center justify-center text-xl">
-                    {template.config?.emoji || getVerticalEmoji(template.vertical)}
+                    {t.config?.emoji || getVerticalEmoji(t.vertical)}
                   </div>
                   <div className="flex items-center gap-2">
-                    {template.config?.rating && (
-                      <span className="text-xs text-yellow-500 font-medium">
-                        ★ {template.config.rating}
+                    {t.config?.time_saved && (
+                      <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-green-50 text-green-600">
+                        {t.config.time_saved} saved
                       </span>
                     )}
                     <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full ${
-                      template.config?.difficulty === 'easy'
-                        ? 'bg-green-50 text-green-600'
-                        : template.config?.difficulty === 'advanced'
-                        ? 'bg-purple-50 text-purple-600'
-                        : 'bg-blue-50 text-blue-600'
+                      t.config?.complexity === 'starter' ? 'bg-green-50 text-green-600' :
+                      t.config?.complexity === 'enterprise' ? 'bg-purple-50 text-purple-600' :
+                      'bg-blue-50 text-blue-600'
                     }`}>
-                      {template.config?.difficulty || 'medium'}
+                      {t.config?.complexity || 'professional'}
                     </span>
                   </div>
                 </div>
 
-                {/* Name & Description */}
+                {/* Name */}
                 <h3 className="font-serif text-lg font-bold text-forest group-hover:text-terracotta transition-colors mb-1">
-                  {template.name}
+                  {t.name}
                 </h3>
+
+                {/* Use case */}
+                {t.config?.use_case && (
+                  <p className="text-xs text-terracotta/70 italic mb-2 line-clamp-2">
+                    &quot;{t.config.use_case}&quot;
+                  </p>
+                )}
+
+                {/* Description on hover */}
                 <p className="text-sm text-gray-500 mb-3 line-clamp-2">
-                  {template.description}
+                  {t.description}
                 </p>
 
                 {/* Integrations */}
-                {template.config?.integrations && (
+                {t.config?.integrations && (
                   <div className="flex flex-wrap gap-1 mb-3">
-                    {template.config.integrations.slice(0, 4).map((int, i) => (
-                      <span
-                        key={i}
-                        className="px-2 py-0.5 bg-cream rounded text-[10px] text-forest/60 font-medium"
-                      >
+                    {t.config.integrations.slice(0, 4).map((int, i) => (
+                      <span key={i} className="px-2 py-0.5 bg-cream rounded text-[10px] text-forest/60 font-medium">
                         {int}
                       </span>
                     ))}
-                    {template.config.integrations.length > 4 && (
+                    {t.config.integrations.length > 4 && (
                       <span className="px-2 py-0.5 bg-cream rounded text-[10px] text-forest/40">
-                        +{template.config.integrations.length - 4}
+                        +{t.config.integrations.length - 4}
                       </span>
                     )}
                   </div>
                 )}
 
                 {/* Footer */}
-                <div className="flex items-center justify-between pt-2 border-t border-gray-50">
-                  <div className="flex items-center gap-2 text-xs text-gray-400">
-                    <span>{getVerticalLabel(template.vertical)}</span>
-                    {template.config?.usage && (
+                <div className="mt-auto pt-3 border-t border-gray-50">
+                  <div className="flex items-center gap-2 text-xs text-gray-400 mb-3">
+                    <span>{getVerticalLabel(t.vertical)}</span>
+                    {t.config?.b2b_b2c && (
                       <>
                         <span>·</span>
-                        <span>{template.config.usage} uses</span>
+                        <span className="uppercase">{t.config.b2b_b2c}</span>
                       </>
                     )}
                   </div>
                   <button
-                    onClick={() => handleDeploy(template)}
-                    disabled={deploying === template.id}
-                    className="text-xs font-medium text-white bg-terracotta hover:bg-terracotta/90 px-3 py-1.5 rounded-lg transition-all disabled:opacity-50 flex items-center gap-1"
+                    onClick={() => handleDeploy(t)}
+                    disabled={deploying === t.id}
+                    className="w-full py-2.5 bg-terracotta text-white rounded-xl text-sm font-medium hover:bg-terracotta/90 disabled:opacity-50 transition-all flex items-center justify-center gap-2"
                   >
-                    {deploying === template.id ? (
+                    {deploying === t.id ? (
                       <>
-                        <div className="animate-spin w-3 h-3 border-2 border-white border-t-transparent rounded-full" />
+                        <div className="animate-spin w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full" />
                         Deploying...
                       </>
                     ) : (
-                      'Deploy →'
+                      '🚀 Deploy Now'
                     )}
                   </button>
                 </div>
@@ -213,6 +319,13 @@ function TemplatesPage({ user, profile }) {
           </div>
         )}
       </div>
+
+      {/* Toast */}
+      {toast && (
+        <div className="fixed bottom-6 right-6 z-[100] px-5 py-3 rounded-xl shadow-lg text-sm font-medium bg-red-600 text-white animate-slide-up">
+          {toast}
+        </div>
+      )}
     </Layout>
   )
 }

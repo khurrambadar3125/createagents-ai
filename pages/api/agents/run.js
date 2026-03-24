@@ -3,7 +3,8 @@ import { anthropic } from '@/lib/anthropic'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+  { auth: { autoRefreshToken: false, persistSession: false } }
 )
 
 export default async function handler(req, res) {
@@ -34,8 +35,18 @@ export default async function handler(req, res) {
       .eq('id', agent.owner_id)
       .single()
 
-    if (profile && profile.runs_limit > 0 && profile.runs_used >= profile.runs_limit) {
-      return res.status(403).json({ error: 'Run limit reached. Please upgrade your plan.' })
+    if (profile) {
+      const runsLimit = profile.runs_limit || 15
+      if (runsLimit > 0 && profile.runs_used >= runsLimit) {
+        return res.status(403).json({
+          error: 'limit_reached',
+          message: 'Monthly run limit reached. Upgrade your plan to continue.',
+          plan: profile.plan,
+          runs_used: profile.runs_used,
+          runs_limit: runsLimit,
+          upgrade_url: '/pricing',
+        })
+      }
     }
 
     // 3. Build context from files if provided
@@ -121,7 +132,7 @@ export default async function handler(req, res) {
       input: { text: user_input },
       output: { error: err.message },
       started_at: new Date().toISOString(),
-    })
+    }).catch(() => {})
 
     console.error('Agent run error:', err)
     return res.status(500).json({ error: err.message || 'Agent run failed' })

@@ -4,34 +4,50 @@ import { getVerticalSystemPromptGuidance } from '@/lib/utils'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+  { auth: { autoRefreshToken: false, persistSession: false } }
 )
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' })
 
-  const token = req.headers.authorization?.replace('Bearer ', '') || req.cookies['sb-access-token']
-  const { data: { user }, error: authError } = await supabase.auth.getUser(
+  const token = req.headers.authorization?.replace('Bearer ', '')
+  const { data: { user } } = await supabase.auth.getUser(
     token || (await getTokenFromCookie(req))
   )
 
-  // For development/testing, also try session-based auth
   let userId = user?.id
-  if (!userId) {
-    // Try extracting from supabase session cookie
-    const authHeader = req.headers.cookie
-    if (authHeader) {
-      const sbAuth = authHeader.split(';').find(c => c.trim().startsWith('sb-'))
-      if (sbAuth) {
-        // Fallback: use the anon key approach with RLS
-      }
-    }
-  }
-
   const { name, description, vertical, workspace_id } = req.body
 
   if (!name || !description || !vertical) {
     return res.status(400).json({ error: 'Name, description, and vertical are required' })
+  }
+
+  // Check agent count limit
+  if (userId) {
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('plan')
+      .eq('id', userId)
+      .single()
+
+    const planLimits = { free: 3, starter: 10, pro: -1, business: -1 }
+    const limit = planLimits[profile?.plan || 'free'] || 3
+
+    if (limit > 0) {
+      const { count } = await supabase
+        .from('agents')
+        .select('id', { count: 'exact' })
+        .eq('owner_id', userId)
+
+      if (count >= limit) {
+        return res.status(403).json({
+          error: 'agent_limit_reached',
+          message: `Your ${profile?.plan || 'free'} plan allows ${limit} agents. Upgrade to create more.`,
+          upgrade_url: '/pricing',
+        })
+      }
+    }
   }
 
   const verticalGuidance = getVerticalSystemPromptGuidance(vertical)
@@ -52,7 +68,7 @@ ${verticalGuidance ? `\nIndustry-specific guidance: ${verticalGuidance}` : ''}
 
 Return ONLY valid JSON with no markdown or code blocks. The JSON must have this exact structure:
 {
-  "system_prompt": "A detailed system prompt for this agent",
+  "system_prompt": "A detailed system prompt of at least 200 words for this agent",
   "purpose": "A one-paragraph description of what this agent does and why it's valuable",
   "trigger": "What triggers this agent to run",
   "steps": ["Step 1 description", "Step 2 description", "..."],
@@ -65,7 +81,6 @@ Return ONLY valid JSON with no markdown or code blocks. The JSON must have this 
     })
 
     const rawText = message.content[0].text.trim()
-    // Strip any markdown code blocks if present
     const jsonStr = rawText.replace(/^```(?:json)?\n?/, '').replace(/\n?```$/, '')
     let config
     try {
@@ -74,7 +89,6 @@ Return ONLY valid JSON with no markdown or code blocks. The JSON must have this 
       return res.status(500).json({ error: 'Failed to parse agent blueprint. Please try again.' })
     }
 
-    // Save to database
     const { data: agent, error: dbError } = await supabase
       .from('agents')
       .insert({
@@ -90,10 +104,7 @@ Return ONLY valid JSON with no markdown or code blocks. The JSON must have this 
       .select()
       .single()
 
-    if (dbError) {
-      return res.status(500).json({ error: dbError.message })
-    }
-
+    if (dbError) return res.status(500).json({ error: dbError.message })
     return res.status(200).json(agent)
   } catch (err) {
     console.error('Agent creation error:', err)
@@ -102,7 +113,6 @@ Return ONLY valid JSON with no markdown or code blocks. The JSON must have this 
 }
 
 async function getTokenFromCookie(req) {
-  // Extract Supabase auth token from cookies
   const cookies = req.headers.cookie || ''
   const match = cookies.match(/sb-[^=]+-auth-token=([^;]+)/)
   if (match) {
@@ -110,9 +120,7 @@ async function getTokenFromCookie(req) {
       const decoded = decodeURIComponent(match[1])
       const parsed = JSON.parse(decoded)
       return parsed?.[0] || parsed?.access_token || null
-    } catch {
-      return null
-    }
+    } catch { return null }
   }
   return null
 }

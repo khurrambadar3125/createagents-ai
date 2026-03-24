@@ -18,6 +18,8 @@ function AgentPage({ user, profile }) {
   const [editing, setEditing] = useState(false)
   const [editName, setEditName] = useState('')
   const [editDesc, setEditDesc] = useState('')
+  const [copied, setCopied] = useState(false)
+  const [showConfig, setShowConfig] = useState(false)
 
   useEffect(() => {
     if (!id) return
@@ -49,9 +51,15 @@ function AgentPage({ user, profile }) {
         body: JSON.stringify({ agent_id: id, user_input: input }),
       })
       const data = await res.json()
-      if (!res.ok) throw new Error(data.error || 'Run failed')
+      if (!res.ok) {
+        if (data.error === 'limit_reached') {
+          setError(`Run limit reached (${data.runs_used}/${data.runs_limit}). Upgrade your plan to continue.`)
+        } else {
+          throw new Error(data.error || data.message || 'Run failed')
+        }
+        return
+      }
       setResult(data)
-      // Refresh runs
       const { data: newRuns } = await supabase
         .from('agent_runs').select('*').eq('agent_id', id)
         .order('started_at', { ascending: false }).limit(20)
@@ -64,20 +72,28 @@ function AgentPage({ user, profile }) {
   }
 
   async function handleSave() {
-    const { error: updateError } = await supabase
-      .from('agents')
-      .update({ name: editName, description: editDesc })
-      .eq('id', id)
-    if (!updateError) {
-      setAgent({ ...agent, name: editName, description: editDesc })
-      setEditing(false)
-    }
+    await supabase.from('agents').update({ name: editName, description: editDesc }).eq('id', id)
+    setAgent({ ...agent, name: editName, description: editDesc })
+    setEditing(false)
   }
 
   async function handleDelete() {
     if (!confirm('Delete this agent? This cannot be undone.')) return
     await supabase.from('agents').delete().eq('id', id)
     router.push('/dashboard')
+  }
+
+  function handleCopy() {
+    if (result?.output) {
+      navigator.clipboard.writeText(result.output)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    }
+  }
+
+  function handleRunAgain() {
+    setResult(null)
+    setError(null)
   }
 
   if (loading) {
@@ -90,14 +106,16 @@ function AgentPage({ user, profile }) {
     )
   }
 
+  const config = agent.config || {}
+
   return (
     <Layout user={user} profile={profile}>
       <div className="space-y-6">
         {/* Header */}
-        <div className="flex items-start justify-between">
+        <div className="flex items-start justify-between flex-wrap gap-4">
           <div className="flex items-center gap-4">
             <div className="w-14 h-14 rounded-2xl bg-cream flex items-center justify-center text-2xl">
-              {getVerticalEmoji(agent.vertical)}
+              {config.emoji || getVerticalEmoji(agent.vertical)}
             </div>
             <div>
               {editing ? (
@@ -109,14 +127,18 @@ function AgentPage({ user, profile }) {
               ) : (
                 <h1 className="font-serif text-2xl font-bold text-forest">{agent.name}</h1>
               )}
-              <div className="flex items-center gap-2 mt-1 text-sm text-gray-400">
+              <div className="flex items-center gap-2 mt-1 text-sm text-gray-400 flex-wrap">
                 <span>{getVerticalLabel(agent.vertical)}</span>
                 <span>·</span>
-                <span className={`px-2 py-0.5 rounded-full text-xs ${statusColor(agent.status)}`}>
-                  {agent.status}
-                </span>
+                <span className={`px-2 py-0.5 rounded-full text-xs ${statusColor(agent.status)}`}>{agent.status}</span>
                 <span>·</span>
                 <span>{agent.run_count || 0} runs</span>
+                {config.complexity && (
+                  <>
+                    <span>·</span>
+                    <span className="capitalize">{config.complexity}</span>
+                  </>
+                )}
               </div>
             </div>
           </div>
@@ -143,19 +165,61 @@ function AgentPage({ user, profile }) {
           />
         )}
 
+        {/* Agent Info Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {config.purpose && (
+            <div className="bg-white rounded-2xl border border-gray-100 p-5">
+              <div className="text-xs text-gray-400 uppercase tracking-wider mb-2 font-medium">Purpose</div>
+              <p className="text-sm text-gray-600 leading-relaxed">{config.purpose}</p>
+            </div>
+          )}
+          {config.integrations?.length > 0 && (
+            <div className="bg-white rounded-2xl border border-gray-100 p-5">
+              <div className="text-xs text-gray-400 uppercase tracking-wider mb-2 font-medium">Integrations</div>
+              <div className="flex flex-wrap gap-1">
+                {config.integrations.map((int, i) => (
+                  <span key={i} className="px-2 py-0.5 bg-cream rounded text-xs text-forest/70 font-medium">{int}</span>
+                ))}
+              </div>
+            </div>
+          )}
+          {config.steps?.length > 0 && (
+            <div className="bg-white rounded-2xl border border-gray-100 p-5">
+              <div className="text-xs text-gray-400 uppercase tracking-wider mb-2 font-medium">Steps</div>
+              <div className="space-y-1.5">
+                {config.steps.slice(0, 5).map((s, i) => (
+                  <div key={i} className="flex items-start gap-2 text-xs text-gray-600">
+                    <span className="w-4 h-4 rounded-full bg-terracotta/10 text-terracotta flex items-center justify-center text-[9px] font-bold flex-shrink-0 mt-0.5">{i + 1}</span>
+                    <span>{s}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+
         {/* Run Panel */}
         <div className="bg-white rounded-2xl border border-gray-100 p-6">
-          <h2 className="font-serif text-lg font-bold text-forest mb-3">Run Agent</h2>
-          <div className="flex gap-3">
-            <textarea
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              placeholder="Describe what you need this agent to do..."
-              className="flex-1 px-4 py-3 rounded-xl border border-gray-200 focus:border-terracotta focus:ring-2 focus:ring-terracotta/20 outline-none text-sm resize-none h-24"
-              disabled={running}
-            />
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="font-serif text-lg font-bold text-forest">Run Agent</h2>
+            <span className="text-[10px] text-gray-400 bg-gray-50 px-2 py-1 rounded-full">Powered by Claude Haiku</span>
           </div>
-          <div className="flex justify-end mt-3">
+          <textarea
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            placeholder="Describe what you need this agent to do..."
+            className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-terracotta focus:ring-2 focus:ring-terracotta/20 outline-none text-sm resize-none h-24"
+            disabled={running}
+          />
+          <div className="flex justify-end mt-3 gap-2">
+            {result && (
+              <button
+                onClick={handleRunAgain}
+                className="px-4 py-2.5 border border-gray-200 rounded-xl text-sm text-gray-500 hover:bg-gray-50"
+              >
+                Run Again
+              </button>
+            )}
             <button
               onClick={handleRun}
               disabled={running || !input.trim()}
@@ -173,13 +237,28 @@ function AgentPage({ user, profile }) {
           </div>
 
           {error && (
-            <div className="mt-4 p-4 bg-red-50 text-red-600 rounded-xl text-sm">{error}</div>
+            <div className="mt-4 p-4 bg-red-50 text-red-600 rounded-xl text-sm">
+              {error}
+              {error.includes('limit') && (
+                <a href="/pricing" className="block mt-2 text-red-700 underline font-medium">
+                  Upgrade your plan →
+                </a>
+              )}
+            </div>
           )}
 
           {result && (
             <div className="mt-4 space-y-3">
-              <div className="p-5 bg-forest/5 rounded-xl">
-                <div className="text-xs text-gray-400 mb-2 uppercase tracking-wider font-medium">Output</div>
+              <div className="p-5 bg-forest/5 rounded-xl relative">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="text-xs text-gray-400 uppercase tracking-wider font-medium">Output</div>
+                  <button
+                    onClick={handleCopy}
+                    className="text-xs text-gray-400 hover:text-forest px-2 py-1 rounded hover:bg-white transition-colors"
+                  >
+                    {copied ? '✓ Copied' : 'Copy'}
+                  </button>
+                </div>
                 <div className="text-sm text-forest whitespace-pre-wrap leading-relaxed">
                   {result.output}
                 </div>
@@ -187,6 +266,7 @@ function AgentPage({ user, profile }) {
               <div className="flex items-center gap-4 text-xs text-gray-400">
                 <span>{result.tokens_used} tokens</span>
                 <span>{result.duration_ms}ms</span>
+                <span className="ml-auto text-[10px] bg-gray-50 px-2 py-0.5 rounded-full">claude-haiku-4-5-20251001</span>
               </div>
             </div>
           )}
@@ -211,13 +291,9 @@ function AgentPage({ user, profile }) {
                   {runs.map((run) => (
                     <tr key={run.id} className="border-b border-gray-50 last:border-0">
                       <td className="px-5 py-3">
-                        <span className={`text-xs px-2 py-0.5 rounded-full ${statusColor(run.status)}`}>
-                          {run.status}
-                        </span>
+                        <span className={`text-xs px-2 py-0.5 rounded-full ${statusColor(run.status)}`}>{run.status}</span>
                       </td>
-                      <td className="px-5 py-3 text-gray-600 max-w-xs truncate">
-                        {run.input?.text || '—'}
-                      </td>
+                      <td className="px-5 py-3 text-gray-600 max-w-xs truncate">{run.input?.text || '—'}</td>
                       <td className="px-5 py-3 text-gray-400 hidden md:table-cell">{run.tokens_used || '—'}</td>
                       <td className="px-5 py-3 text-gray-400 hidden md:table-cell">{run.duration_ms ? `${run.duration_ms}ms` : '—'}</td>
                       <td className="px-5 py-3 text-gray-400">{formatDate(run.started_at)}</td>
@@ -229,15 +305,23 @@ function AgentPage({ user, profile }) {
           </div>
         )}
 
-        {/* Config */}
+        {/* Config Toggle */}
         {agent.config && (
           <div>
-            <h2 className="font-serif text-lg font-bold text-forest mb-3">Agent Config</h2>
-            <div className="bg-white rounded-2xl border border-gray-100 p-5">
-              <pre className="text-xs text-gray-600 overflow-x-auto whitespace-pre-wrap">
-                {JSON.stringify(agent.config, null, 2)}
-              </pre>
-            </div>
+            <button
+              onClick={() => setShowConfig(!showConfig)}
+              className="flex items-center gap-2 text-sm text-gray-400 hover:text-forest transition-colors"
+            >
+              <span>{showConfig ? '▾' : '▸'}</span>
+              <span>Agent Configuration</span>
+            </button>
+            {showConfig && (
+              <div className="mt-3 bg-white rounded-2xl border border-gray-100 p-5">
+                <pre className="text-xs text-gray-600 overflow-x-auto whitespace-pre-wrap">
+                  {JSON.stringify(agent.config, null, 2)}
+                </pre>
+              </div>
+            )}
           </div>
         )}
       </div>
