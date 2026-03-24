@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import Link from 'next/link'
 import Layout from '@/components/Layout'
 import withAuth from '@/lib/withAuth'
 
@@ -65,13 +66,14 @@ const FAQS = [
   { q: 'Can I change plans anytime?', a: 'Yes! Upgrade or downgrade at any time. When you upgrade, you get access to the new limits immediately. When you downgrade, your current billing period finishes first.' },
   { q: 'What happens when I hit my run limit?', a: 'Your existing agents stay active, but new runs are paused until your next billing cycle or until you upgrade. We\'ll warn you when you\'re running low.' },
   { q: 'What does "Bring Your Own Key" mean?', a: 'On the Business plan, you can use your own Anthropic API key. This means unlimited runs at your own API cost — perfect for high-volume enterprise use cases.' },
-  { q: 'Do you offer refunds?', a: 'Yes, we offer a full refund within the first 7 days of any paid plan. No questions asked. After that, you can cancel anytime and keep access until your billing period ends.' },
+  { q: 'How does PayPal billing work?', a: 'We use PayPal subscriptions for recurring billing. You can manage, pause, or cancel your subscription anytime directly through PayPal or from your settings page.' },
 ]
 
 function PricingPage({ user, profile }) {
   const [annual, setAnnual] = useState(false)
   const [loading, setLoading] = useState(null)
   const [faqOpen, setFaqOpen] = useState(null)
+  const [cancelling, setCancelling] = useState(false)
 
   async function handleUpgrade(planKey) {
     if (planKey === 'enterprise') {
@@ -82,30 +84,44 @@ function PricingPage({ user, profile }) {
 
     setLoading(planKey)
     try {
-      const priceKey = `${planKey}-${annual ? 'annual' : 'monthly'}`
-      const res = await fetch('/api/stripe/create-checkout', {
+      const planKeyFull = `${planKey}-${annual ? 'annual' : 'monthly'}`
+      const res = await fetch('/api/paypal/create-subscription', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ price_key: priceKey, user_id: user.id, email: user.email }),
+        body: JSON.stringify({ plan_key: planKeyFull, user_id: user.id, email: user.email }),
       })
       const data = await res.json()
-      if (data.url) window.location.href = data.url
-      else alert(data.error || 'Failed to create checkout session')
+      if (data.approve_url) {
+        window.location.href = data.approve_url
+      } else {
+        alert(data.error || 'Failed to create PayPal subscription. Please try again.')
+      }
     } catch (err) {
       alert('Something went wrong. Please try again.')
     }
     setLoading(null)
   }
 
-  async function handleManageBilling() {
-    const res = await fetch('/api/stripe/portal', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ user_id: user.id }),
-    })
-    const data = await res.json()
-    if (data.url) window.location.href = data.url
-    else alert(data.error || 'No billing account found')
+  async function handleCancel() {
+    if (!confirm('Cancel your subscription? You\'ll keep access until the end of your billing period.')) return
+    setCancelling(true)
+    try {
+      const res = await fetch('/api/paypal/cancel', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user_id: user.id }),
+      })
+      const data = await res.json()
+      if (data.cancelled) {
+        alert('Subscription cancelled. You\'ll keep access until the end of your billing period.')
+        window.location.reload()
+      } else {
+        alert(data.error || 'Failed to cancel. Please try through PayPal directly.')
+      }
+    } catch {
+      alert('Something went wrong.')
+    }
+    setCancelling(false)
   }
 
   const currentPlan = profile?.plan || 'free'
@@ -119,7 +135,7 @@ function PricingPage({ user, profile }) {
             Simple, transparent pricing.
           </h1>
           <p className="text-gray-400 max-w-lg mx-auto">
-            Scale as you grow. Start free, upgrade when you need more power.
+            Scale as you grow. Start free, upgrade when you need more power. Powered by PayPal.
           </p>
 
           {/* Toggle */}
@@ -196,21 +212,36 @@ function PricingPage({ user, profile }) {
                       : 'bg-forest text-cream hover:bg-forest/90'
                   }`}
                 >
-                  {loading === plan.key ? 'Loading...' : plan.cta}
+                  {loading === plan.key ? 'Redirecting to PayPal...' : plan.cta}
                 </button>
               )}
             </div>
           ))}
         </div>
 
-        {/* Manage billing for paid users */}
+        {/* Cancel subscription for paid users */}
         {currentPlan !== 'free' && (
-          <div className="text-center">
-            <button onClick={handleManageBilling} className="text-sm text-terracotta hover:underline">
-              Manage Billing & Invoices
+          <div className="text-center space-y-2">
+            <p className="text-sm text-gray-400">
+              Your <strong className="text-forest">{currentPlan}</strong> subscription is managed through PayPal.
+            </p>
+            <button
+              onClick={handleCancel}
+              disabled={cancelling}
+              className="text-sm text-red-400 hover:text-red-600 hover:underline disabled:opacity-50"
+            >
+              {cancelling ? 'Cancelling...' : 'Cancel Subscription'}
             </button>
           </div>
         )}
+
+        {/* PayPal trust badge */}
+        <div className="flex items-center justify-center gap-2 text-xs text-gray-400">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" />
+          </svg>
+          Secure payments via PayPal. Cancel anytime.
+        </div>
 
         {/* FAQ */}
         <div className="max-w-2xl mx-auto">

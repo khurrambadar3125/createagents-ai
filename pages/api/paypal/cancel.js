@@ -1,7 +1,6 @@
-import Stripe from 'stripe'
 import { createClient } from '@supabase/supabase-js'
+import { cancelSubscription } from '@/lib/paypal'
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY)
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
   process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
@@ -16,20 +15,25 @@ export default async function handler(req, res) {
 
   const { data: profile } = await supabase
     .from('profiles')
-    .select('stripe_customer_id')
+    .select('paypal_subscription_id')
     .eq('id', user_id)
     .single()
 
-  if (!profile?.stripe_customer_id) {
-    return res.status(400).json({ error: 'No billing account found. Subscribe to a plan first.' })
+  if (!profile?.paypal_subscription_id) {
+    return res.status(400).json({ error: 'No active subscription found.' })
   }
 
   try {
-    const session = await stripe.billingPortal.sessions.create({
-      customer: profile.stripe_customer_id,
-      return_url: `${process.env.NEXT_PUBLIC_SITE_URL || 'https://createagents.ai'}/settings`,
-    })
-    return res.status(200).json({ url: session.url })
+    const success = await cancelSubscription(profile.paypal_subscription_id)
+    if (success) {
+      await supabase.from('profiles').update({
+        plan: 'free',
+        runs_limit: 15,
+        paypal_subscription_id: null,
+      }).eq('id', user_id)
+      return res.status(200).json({ cancelled: true })
+    }
+    return res.status(500).json({ error: 'Failed to cancel subscription' })
   } catch (err) {
     return res.status(500).json({ error: err.message })
   }
