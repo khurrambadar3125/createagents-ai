@@ -38,6 +38,29 @@ function BuildPage({ user, profile }) {
     }
   }
 
+  async function handleLaunch() {
+    if (!agentId) return
+    setLoading(true)
+    try {
+      // Save any edits the user made to the blueprint
+      const updatedConfig = {
+        ...blueprint,
+        system_prompt: blueprint.system_prompt || `You are ${name}. ${description}`,
+      }
+      const res = await fetch(`/api/agents/${agentId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, description, config: updatedConfig }),
+      })
+      if (!res.ok) throw new Error('Failed to save changes')
+      setStep(3)
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setLoading(false)
+    }
+  }
+
   return (
     <Layout user={user} profile={profile}>
       <div className="max-w-3xl mx-auto">
@@ -273,10 +296,18 @@ function BuildPage({ user, profile }) {
                 )}
               </button>
               <button
-                onClick={() => setStep(3)}
-                className="flex-1 py-3 bg-terracotta text-white rounded-xl font-medium text-sm hover:bg-terracotta/90 transition-all"
+                onClick={handleLaunch}
+                disabled={loading}
+                className="flex-1 py-3 bg-terracotta text-white rounded-xl font-medium text-sm hover:bg-terracotta/90 disabled:opacity-50 transition-all flex items-center justify-center gap-2"
               >
-                Launch My Agent →
+                {loading ? (
+                  <>
+                    <div className="animate-spin w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full" />
+                    Saving...
+                  </>
+                ) : (
+                  'Launch My Agent →'
+                )}
               </button>
             </div>
           </div>
@@ -293,18 +324,18 @@ function BuildPage({ user, profile }) {
               <strong className="text-forest">{name}</strong> is ready. Just give it a task
               and it&apos;ll do the work for you.
             </p>
-            <div className="flex items-center justify-center gap-4 pt-4">
+            <div className="flex flex-col items-center gap-3 pt-4">
               <button
                 onClick={() => router.push(`/agent/${agentId}`)}
-                className="px-8 py-3 bg-terracotta text-white rounded-xl font-medium text-sm hover:bg-terracotta/90 transition-all"
+                className="px-10 py-3.5 bg-terracotta text-white rounded-xl font-medium text-sm hover:bg-terracotta/90 transition-all"
               >
                 Try It Now →
               </button>
               <button
                 onClick={() => router.push('/dashboard')}
-                className="px-6 py-3 border border-gray-200 rounded-xl text-sm text-gray-500 hover:bg-gray-50 transition-all"
+                className="text-sm text-gray-400 hover:text-forest transition-colors"
               >
-                Go to My Agents
+                or go to My Agents
               </button>
             </div>
           </div>
