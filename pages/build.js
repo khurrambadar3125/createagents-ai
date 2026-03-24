@@ -60,9 +60,9 @@ function BuildPage({ user, profile }) {
             </div>
           ))}
           <div className="ml-4 text-sm text-gray-400">
-            {step === 1 && 'Describe your agent'}
-            {step === 2 && 'Review blueprint'}
-            {step === 3 && 'Agent ready!'}
+            {step === 1 && 'Tell us what you need'}
+            {step === 2 && 'Check & customise'}
+            {step === 3 && 'Ready to go!'}
           </div>
         </div>
 
@@ -70,35 +70,35 @@ function BuildPage({ user, profile }) {
         {step === 1 && (
           <div className="space-y-6">
             <div>
-              <h1 className="font-serif text-3xl font-bold text-forest mb-2">Build a New Agent</h1>
-              <p className="text-gray-400">Describe what you need in plain English. CreateAgent will architect it.</p>
+              <h1 className="font-serif text-3xl font-bold text-forest mb-2">What do you need help with?</h1>
+              <p className="text-gray-400">Just describe it in your own words. We&apos;ll build it for you.</p>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-forest mb-2">Agent Name</label>
+              <label className="block text-sm font-medium text-forest mb-2">Give it a name</label>
               <input
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="e.g. Customer Support Bot, Invoice Analyzer, Lead Qualifier"
+                placeholder="e.g. My Email Helper, Invoice Reader, Customer Chat Bot"
                 className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-terracotta focus:ring-2 focus:ring-terracotta/20 outline-none text-sm"
               />
             </div>
 
             <div>
               <label className="block text-sm font-medium text-forest mb-2">
-                What should this agent do?
+                What should it do for you?
               </label>
               <textarea
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                placeholder="Describe in plain English what this agent should do. Be as specific as you want — the more detail, the better the agent.&#10;&#10;Example: 'An agent that reads customer support emails, categorizes them by urgency, drafts responses following our brand voice, and escalates critical issues to the team lead via Slack.'"
+                placeholder="Just tell us in plain English — like you're explaining to a colleague.&#10;&#10;Example: 'I need something that reads my customer emails, figures out which ones are urgent, writes helpful replies, and lets me know on Slack if anything is critical.'"
                 className="w-full h-40 px-4 py-3 rounded-xl border border-gray-200 focus:border-terracotta focus:ring-2 focus:ring-terracotta/20 outline-none text-sm resize-none"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-forest mb-3">Industry Vertical</label>
+              <label className="block text-sm font-medium text-forest mb-3">What area is this for?</label>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
                 {VERTICALS.map((v) => (
                   <button
@@ -127,10 +127,10 @@ function BuildPage({ user, profile }) {
               {loading ? (
                 <>
                   <div className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full" />
-                  CreateAgent is architecting your agent...
+                  Building your agent — just a moment...
                 </>
               ) : (
-                'Generate Agent Blueprint →'
+                'Build My Agent →'
               )}
             </button>
           </div>
@@ -140,8 +140,8 @@ function BuildPage({ user, profile }) {
         {step === 2 && blueprint && (
           <div className="space-y-6">
             <div>
-              <h1 className="font-serif text-3xl font-bold text-forest mb-2">Agent Blueprint</h1>
-              <p className="text-gray-400">Review and customise your agent before deploying.</p>
+              <h1 className="font-serif text-3xl font-bold text-forest mb-2">Here&apos;s your agent!</h1>
+              <p className="text-gray-400">We&apos;ve built it for you. Feel free to change anything below, or go ahead and launch it.</p>
             </div>
 
             <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
@@ -177,7 +177,7 @@ function BuildPage({ user, profile }) {
 
               {/* Steps */}
               <div className="p-6 border-b border-gray-50">
-                <h3 className="text-sm font-medium text-forest mb-3 uppercase tracking-wider">How it works</h3>
+                <h3 className="text-sm font-medium text-forest mb-3 uppercase tracking-wider">What it will do</h3>
                 <div className="space-y-2">
                   {(blueprint.steps || []).map((s, i) => (
                     <div key={i} className="flex items-start gap-3">
@@ -216,7 +216,7 @@ function BuildPage({ user, profile }) {
               {/* Integrations */}
               {blueprint.integrations?.length > 0 && (
                 <div className="p-6 border-b border-gray-50">
-                  <h3 className="text-sm font-medium text-forest mb-3 uppercase tracking-wider">Integrations</h3>
+                  <h3 className="text-sm font-medium text-forest mb-3 uppercase tracking-wider">Tools it connects to</h3>
                   <div className="flex flex-wrap gap-2">
                     {blueprint.integrations.map((int, i) => (
                       <span key={i} className="px-3 py-1 bg-cream rounded-full text-xs text-forest font-medium flex items-center gap-1">
@@ -269,14 +269,14 @@ function BuildPage({ user, profile }) {
                     Regenerating...
                   </>
                 ) : (
-                  '↻ Regenerate'
+                  '↻ Try Again'
                 )}
               </button>
               <button
                 onClick={() => setStep(3)}
                 className="flex-1 py-3 bg-terracotta text-white rounded-xl font-medium text-sm hover:bg-terracotta/90 transition-all"
               >
-                Deploy Agent →
+                Launch My Agent →
               </button>
             </div>
           </div>
@@ -287,24 +287,24 @@ function BuildPage({ user, profile }) {
           <div className="text-center py-12 space-y-6">
             <div className="text-6xl">🎉</div>
             <h1 className="font-serif text-4xl font-bold text-forest">
-              Your Agent is Live!
+              You&apos;re all set!
             </h1>
             <p className="text-gray-400 max-w-md mx-auto">
-              <strong className="text-forest">{name}</strong> has been deployed and is ready to run.
-              Give it a task and watch the magic happen.
+              <strong className="text-forest">{name}</strong> is ready. Just give it a task
+              and it&apos;ll do the work for you.
             </p>
             <div className="flex items-center justify-center gap-4 pt-4">
               <button
                 onClick={() => router.push(`/agent/${agentId}`)}
                 className="px-8 py-3 bg-terracotta text-white rounded-xl font-medium text-sm hover:bg-terracotta/90 transition-all"
               >
-                Run It Now →
+                Try It Now →
               </button>
               <button
                 onClick={() => router.push('/dashboard')}
                 className="px-6 py-3 border border-gray-200 rounded-xl text-sm text-gray-500 hover:bg-gray-50 transition-all"
               >
-                Back to Dashboard
+                Go to My Agents
               </button>
             </div>
           </div>
