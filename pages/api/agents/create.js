@@ -1,6 +1,7 @@
 import { supabaseAdmin as supabase } from '@/lib/supabaseAdmin'
 import { anthropic } from '@/lib/anthropic'
 import { getVerticalSystemPromptGuidance } from '@/lib/utils'
+import { getContext } from '@/lib/knowledge-engine'
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' })
@@ -47,6 +48,12 @@ export default async function handler(req, res) {
   const verticalGuidance = getVerticalSystemPromptGuidance(vertical)
 
   try {
+    // Retrieve domain knowledge to create a better agent
+    const knowledgeContext = await getContext(
+      `${name} ${description} ${vertical}`,
+      { vertical, maxTokens: 2000 }
+    ).catch(() => '')
+
     const message = await anthropic.messages.create({
       model: 'claude-haiku-4-5-20251001',
       max_tokens: 1500,
@@ -59,6 +66,7 @@ Name: ${name}
 Description: ${description}
 Industry: ${vertical}
 ${verticalGuidance ? `\nIndustry-specific guidance: ${verticalGuidance}` : ''}
+${knowledgeContext ? `\nDOMAIN KNOWLEDGE (use this to write a more accurate, regulation-aware system prompt):\n${knowledgeContext}` : ''}
 
 Return ONLY valid JSON with no markdown or code blocks. The JSON must have this exact structure:
 {
