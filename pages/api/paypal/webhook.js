@@ -1,11 +1,5 @@
-import { createClient } from '@supabase/supabase-js'
+import { supabaseAdmin as supabase } from '@/lib/supabaseAdmin'
 import { verifyWebhookSignature } from '@/lib/paypal'
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-  { auth: { autoRefreshToken: false, persistSession: false } }
-)
 
 const PLAN_RUNS = { starter: 400, pro: 900, business: -1 }
 

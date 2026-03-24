@@ -1,11 +1,5 @@
-import { createClient } from '@supabase/supabase-js'
+import { supabaseAdmin as supabase } from '@/lib/supabaseAdmin'
 import { sendAgentDeployedEmail } from '@/lib/email'
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-  { auth: { autoRefreshToken: false, persistSession: false } }
-)
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' })
