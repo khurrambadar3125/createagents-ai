@@ -12,7 +12,7 @@ export default function Layout({ children, user, profile }) {
   const [toast, setToast] = useState(null)
 
   const NAV_ITEMS = [
-    { href: '/dashboard', label: t('nav_dashboard'), icon: '⬡' },
+    { href: '/dashboard', label: 'Home', icon: '🏠' },
     { href: '/templates', label: t('nav_library'), icon: '🚀', badge: '96' },
     { href: '/build', label: t('nav_build'), icon: '✦' },
     { href: '/files', label: t('nav_files'), icon: '◈' },
@@ -132,6 +132,26 @@ export default function Layout({ children, user, profile }) {
         <main className="flex-1 p-4 lg:p-8 max-w-7xl w-full mx-auto">
           {typeof children === 'function' ? children({ showToast, t }) : children}
         </main>
+
+        {/* Footer */}
+        <footer className="border-t border-gray-100 bg-white px-4 lg:px-8 py-6">
+          <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-gray-400">
+            <div className="flex items-center gap-2">
+              <div className="w-5 h-5 rounded bg-terracotta flex items-center justify-center text-white font-bold text-[10px]">C</div>
+              <span className="font-medium text-forest">CreateAgent.ai</span>
+              <span>— Describe it. We build it. You deploy it.</span>
+            </div>
+            <div className="flex items-center gap-4">
+              <a href="https://createagents.ai" className="hover:text-forest transition-colors">Home</a>
+              <a href="/templates" className="hover:text-forest transition-colors">Agent Library</a>
+              <a href="/pricing" className="hover:text-forest transition-colors">Pricing</a>
+              <a href="mailto:hello@createagents.ai" className="hover:text-forest transition-colors">Contact</a>
+            </div>
+            <div className="text-gray-300">
+              &copy; {new Date().getFullYear()} CreateAgent.ai. All rights reserved.
+            </div>
+          </div>
+        </footer>
       </div>
 
       {toast && (

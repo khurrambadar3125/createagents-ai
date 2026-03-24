@@ -20,16 +20,20 @@ function Dashboard({ user, profile }) {
 
   useEffect(() => {
     async function load() {
-      const [agentsRes, runsRes, filesRes, featuredRes] = await Promise.all([
+      const [agentsRes, runsRes, filesRes] = await Promise.all([
         supabase.from('agents').select('*').eq('owner_id', user.id).order('created_at', { ascending: false }),
         supabase.from('agent_runs').select('*, agents(name)').eq('user_id', user.id).order('started_at', { ascending: false }).limit(10),
         supabase.from('files').select('id', { count: 'exact' }).eq('owner_id', user.id),
-        supabase.from('agents').select('*').is('owner_id', null).limit(6),
       ])
       setAgents(agentsRes.data || [])
       setRuns(runsRes.data || [])
       setFileCount(filesRes.count || 0)
-      setFeatured(featuredRes.data || [])
+      // Fetch featured templates via API (bypasses RLS)
+      try {
+        const tplRes = await fetch('/api/agents/templates')
+        const tplData = await tplRes.json()
+        setFeatured(Array.isArray(tplData) ? tplData.slice(0, 6) : [])
+      } catch { setFeatured([]) }
       setLoading(false)
     }
     load()

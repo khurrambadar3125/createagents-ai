@@ -1,5 +1,6 @@
 import { supabaseAdmin as supabase } from '@/lib/supabaseAdmin'
 import { anthropic } from '@/lib/anthropic'
+import { getContext } from '@/lib/knowledge-engine'
 
 const STEP_INSTRUCTION = `
 
@@ -62,9 +63,13 @@ export default async function handler(req, res) {
       }
     }
 
-    // 4. Build system prompt with step-by-step instruction
+    // 4. Build system prompt with knowledge injection + step-by-step instruction
     const basePrompt = agent.config?.system_prompt || `You are ${agent.name}. ${agent.description}`
-    const systemPrompt = basePrompt + STEP_INSTRUCTION
+    const userQuery = user_input || conversationHistory?.slice(-1)?.[0]?.text || ''
+    const knowledgeContext = await getContext(userQuery, { vertical: agent.vertical, maxTokens: 2000 }).catch(() => '')
+    const systemPrompt = basePrompt
+      + (knowledgeContext ? `\n\nRELEVANT KNOWLEDGE:\n${knowledgeContext}` : '')
+      + STEP_INSTRUCTION
 
     // 5. Build messages — support conversation history
     let claudeMessages = []

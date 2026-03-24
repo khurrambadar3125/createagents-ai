@@ -19,12 +19,13 @@ function TemplatesPage({ user, profile }) {
 
   useEffect(() => {
     async function load() {
-      const { data } = await supabase
-        .from('agents')
-        .select('*')
-        .is('owner_id', null)
-        .order('name')
-      setTemplates(data || [])
+      try {
+        const res = await fetch('/api/agents/templates')
+        const data = await res.json()
+        setTemplates(Array.isArray(data) ? data : [])
+      } catch {
+        setTemplates([])
+      }
       setLoading(false)
     }
     load()
