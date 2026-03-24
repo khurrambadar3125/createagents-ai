@@ -5,6 +5,7 @@ import { supabase } from '@/lib/supabase'
 
 const NAV_ITEMS = [
   { href: '/dashboard', label: 'Dashboard', icon: '⬡' },
+  { href: '/templates', label: 'Agent Library', icon: '🚀' },
   { href: '/build', label: 'Build Agent', icon: '✦' },
   { href: '/files', label: 'Files', icon: '◈' },
   { href: '/runs', label: 'Run History', icon: '▸' },
