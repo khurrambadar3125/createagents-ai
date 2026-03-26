@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/router'
 import { supabase } from '@/lib/supabase'
 import { useI18n } from '@/lib/i18n'
+import HelpChat from './HelpChat'
 
 export default function Layout({ children, user, profile }) {
   const router = useRouter()
@@ -153,6 +154,9 @@ export default function Layout({ children, user, profile }) {
           </div>
         </footer>
       </div>
+
+      {/* Help chatbot — appears on every page */}
+      <HelpChat user={user} />
 
       {toast && (
         <div className={`fixed bottom-6 ${isRtl ? 'left-6' : 'right-6'} z-[100] px-5 py-3 rounded-xl shadow-lg text-sm font-medium animate-slide-up ${

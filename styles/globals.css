@@ -78,6 +78,41 @@
 }
 
 /* ═══════════════════════════════════════════
+   READABILITY — text on dark must be light
+   ═══════════════════════════════════════════ */
+@layer base {
+  /* Forest (dark green) backgrounds → cream/white text */
+  .bg-forest, .bg-forest\/90, [class*="bg-forest"] {
+    color: #FAF7F0;
+  }
+  .bg-forest a, .bg-forest button { color: inherit; }
+
+  /* Terracotta backgrounds → white text */
+  .bg-terracotta, .bg-terracotta\/90, [class*="bg-terracotta"] {
+    color: #FFFFFF;
+  }
+
+  /* Dark gray backgrounds → white text */
+  .bg-gray-700, .bg-gray-800, .bg-gray-900, .bg-black {
+    color: #FFFFFF;
+  }
+
+  /* Ensure placeholder text is visible */
+  ::placeholder {
+    color: #9CA3AF;
+    opacity: 1;
+  }
+
+  /* Gray text minimum contrast (WCAG AA) */
+  .text-gray-400 { color: #6B7280 !important; }
+  .text-gray-300 { color: #9CA3AF !important; }
+
+  /* Cream backgrounds — ensure dark text */
+  .bg-cream { color: #1B3A2D; }
+  .bg-white { color: #1B3A2D; }
+}
+
+/* ═══════════════════════════════════════════
    RESPONSIVE TYPOGRAPHY
    ═══════════════════════════════════════════ */
 @layer base {

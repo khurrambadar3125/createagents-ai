@@ -6,9 +6,11 @@ import AgentCard from '@/components/AgentCard'
 import RunModal from '@/components/RunModal'
 import withAuth from '@/lib/withAuth'
 import { supabase } from '@/lib/supabase'
+import { useLearn } from '@/lib/useLearn'
 import { PLAN_LIMITS, formatDate, truncate, getVerticalEmoji } from '@/lib/utils'
 
 function Dashboard({ user, profile }) {
+  const { track, suggestions } = useLearn(user?.id)
   const router = useRouter()
   const [agents, setAgents] = useState([])
   const [runs, setRuns] = useState([])
@@ -147,12 +149,33 @@ function Dashboard({ user, profile }) {
           </div>
         )}
 
+        {/* Smart Suggestions — learning loop */}
+        {suggestions.length > 0 && (
+          <div className="space-y-2">
+            {suggestions.map((s, i) => (
+              <div key={i} className="bg-white rounded-2xl border border-terracotta/10 p-4 flex items-center justify-between gap-4">
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-forest">{s.title}</p>
+                  <p className="text-xs text-gray-400 mt-0.5">{s.message}</p>
+                </div>
+                <Link
+                  href={s.action}
+                  onClick={() => track('suggestion_clicked', { type: s.type })}
+                  className="px-4 py-2 bg-terracotta text-white rounded-xl text-xs font-medium hover:bg-terracotta/90 whitespace-nowrap"
+                >
+                  {s.actionLabel}
+                </Link>
+              </div>
+            ))}
+          </div>
+        )}
+
         {/* Quick Actions */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           {[
             { href: '/build', icon: '✦', label: 'Build Agent', color: 'bg-terracotta' },
             { href: '/templates', icon: '🚀', label: 'Browse Library', color: 'bg-forest' },
-            { href: '/files', icon: '📄', label: 'Upload File', color: 'bg-gold' },
+            { href: '/files', icon: '📄', label: 'Upload File', color: 'bg-gold text-forest' },
             { href: '/runs', icon: '▸', label: 'View Runs', color: 'bg-gray-700' },
           ].map((a) => (
             <Link
