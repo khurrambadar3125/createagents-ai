@@ -71,13 +71,42 @@ export default function HelpChat({ user }) {
     if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend() }
   }
 
+  const [showNudge, setShowNudge] = useState(false)
+
+  // Show nudge after 3 seconds on first visit
+  useEffect(() => {
+    const seen = localStorage.getItem('zara_nudge_seen')
+    if (!seen && !open) {
+      const timer = setTimeout(() => setShowNudge(true), 3000)
+      return () => clearTimeout(timer)
+    }
+  }, [open])
+
+  function handleOpen() {
+    setOpen(!open)
+    setShowNudge(false)
+    localStorage.setItem('zara_nudge_seen', '1')
+  }
+
   return (
     <>
+      {/* Nudge tooltip */}
+      {showNudge && !open && (
+        <div className="fixed bottom-24 right-6 z-[91] animate-slide-up">
+          <div className="bg-forest text-cream px-4 py-3 rounded-xl shadow-lg max-w-[240px] text-sm relative">
+            <button onClick={() => { setShowNudge(false); localStorage.setItem('zara_nudge_seen', '1') }} className="absolute top-1 right-2 text-cream/40 hover:text-cream text-xs">✕</button>
+            <p className="font-medium mb-0.5">Need guidance? Talk to Zara ✦</p>
+            <p className="text-xs text-cream/70">I&apos;m your AI guide — tap the button below to get help anytime.</p>
+            <div className="absolute bottom-0 right-8 translate-y-1/2 w-3 h-3 bg-forest rotate-45" />
+          </div>
+        </div>
+      )}
+
       {/* Floating button */}
       <button
-        onClick={() => setOpen(!open)}
+        onClick={handleOpen}
         className="fixed bottom-6 right-6 z-[90] w-14 h-14 rounded-full bg-terracotta text-white shadow-lg hover:shadow-xl hover:scale-105 transition-all flex items-center justify-center text-2xl"
-        title="Need help? Ask me anything"
+        title="Talk to Zara — your AI guide"
       >
         {open ? '✕' : '💬'}
       </button>
@@ -87,10 +116,10 @@ export default function HelpChat({ user }) {
         <div className="fixed bottom-24 right-6 z-[90] w-[360px] max-w-[calc(100vw-2rem)] h-[480px] max-h-[70vh] bg-white rounded-2xl shadow-2xl border border-gray-200 flex flex-col overflow-hidden">
           {/* Header */}
           <div className="bg-forest text-cream px-5 py-4 flex items-center gap-3">
-            <div className="w-8 h-8 rounded-full bg-terracotta flex items-center justify-center text-sm font-bold">C</div>
+            <div className="w-8 h-8 rounded-full bg-terracotta flex items-center justify-center text-sm">✦</div>
             <div>
-              <div className="text-sm font-medium">CreateAgent Helper</div>
-              <div className="text-[10px] text-cream/60">Ask me anything about the platform</div>
+              <div className="text-sm font-medium">Zara — Your AI Guide</div>
+              <div className="text-[10px] text-cream/60">I&apos;m here to help you every step of the way</div>
             </div>
           </div>
 
@@ -98,9 +127,9 @@ export default function HelpChat({ user }) {
           <div className="flex-1 overflow-y-auto p-4 space-y-3">
             {messages.length === 0 && !streaming && (
               <div className="text-center py-6">
-                <div className="text-3xl mb-2">👋</div>
-                <p className="text-sm text-forest font-medium mb-1">Hi! How can I help?</p>
-                <p className="text-xs text-gray-400 mb-4">I know everything about CreateAgent.ai</p>
+                <div className="text-3xl mb-2">✦</div>
+                <p className="text-sm text-forest font-medium mb-1">Hi! I&apos;m Zara, your AI guide</p>
+                <p className="text-xs text-gray-400 mb-4">Ask me anything — I&apos;ll walk you through it step by step</p>
                 <div className="space-y-2">
                   {['How do I build my first agent?', 'What are the pricing plans?', 'How do I share my agent?'].map((q) => (
                     <button

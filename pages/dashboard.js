@@ -92,6 +92,17 @@ function Dashboard({ user, profile }) {
           <p className="text-gray-400 text-sm mt-1">Here&apos;s what&apos;s happening with your agents</p>
         </div>
 
+        {/* First-time guidance banner */}
+        {agents.length === 0 && runs.length === 0 && (
+          <div className="bg-forest rounded-2xl p-5 flex items-center gap-4">
+            <div className="text-3xl">✦</div>
+            <div className="flex-1 text-cream">
+              <p className="text-sm font-medium">First time here? Zara is here to help!</p>
+              <p className="text-xs text-cream/70 mt-0.5">Tap the chat button in the bottom right corner anytime you need guidance. Zara will walk you through everything step by step.</p>
+            </div>
+          </div>
+        )}
+
         {/* Usage Warning */}
         {runsPercent >= 100 && (
           <div className="bg-red-50 border border-red-200 rounded-2xl p-4 flex items-center justify-between">
