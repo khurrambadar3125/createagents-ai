@@ -105,10 +105,10 @@ export default function SharePage() {
     if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend() }
   }
 
-  if (loading) return <div className="min-h-screen bg-cream flex items-center justify-center font-sans"><div className="animate-spin w-8 h-8 border-4 border-terracotta border-t-transparent rounded-full" /></div>
+  if (loading) return <div className="min-h-dvh bg-cream flex items-center justify-center font-sans"><div className="animate-spin w-8 h-8 border-4 border-terracotta border-t-transparent rounded-full" /></div>
 
   if (!agent) return (
-    <div className="min-h-screen bg-cream flex items-center justify-center font-sans">
+    <div className="min-h-dvh bg-cream flex items-center justify-center font-sans">
       <div className="text-center">
         <div className="text-4xl mb-4">🔒</div>
         <h1 className="font-serif text-2xl font-bold text-forest mb-2">Agent not found</h1>
@@ -124,7 +124,7 @@ export default function SharePage() {
         <meta name="description" content={agent.description} />
       </Head>
 
-      <div className="min-h-screen bg-cream font-sans flex flex-col">
+      <div className="min-h-dvh bg-cream font-sans flex flex-col">
         {/* Header */}
         <header className="bg-white border-b border-gray-100 px-4 py-3">
           <div className="max-w-2xl mx-auto flex items-center gap-3">

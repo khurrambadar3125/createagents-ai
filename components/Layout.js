@@ -32,7 +32,7 @@ export default function Layout({ children, user, profile }) {
   }
 
   return (
-    <div className={`min-h-screen bg-cream font-sans flex ${isRtl ? 'flex-row-reverse' : ''}`} dir={isRtl ? 'rtl' : 'ltr'}>
+    <div className={`min-h-dvh bg-cream font-sans flex ${isRtl ? 'flex-row-reverse' : ''}`} dir={isRtl ? 'rtl' : 'ltr'}>
       {sidebarOpen && (
         <div className="fixed inset-0 bg-black/40 z-40 lg:hidden" onClick={() => setSidebarOpen(false)} />
       )}

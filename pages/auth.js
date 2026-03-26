@@ -59,7 +59,7 @@ export default function AuthPage() {
   }
 
   return (
-    <div className="min-h-screen bg-cream font-sans flex">
+    <div className="min-h-dvh bg-cream font-sans flex">
       {/* Left panel */}
       <div className="hidden lg:flex lg:w-1/2 bg-forest text-cream flex-col justify-between p-12">
         <div>
