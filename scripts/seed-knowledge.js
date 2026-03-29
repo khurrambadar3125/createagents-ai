@@ -1215,7 +1215,7 @@ Hospitality and Generosity: Saudi business culture emphasises generosity (karam)
 Gift-Giving and Entertainment: Business gift-giving follows cultural norms—gifts should be of good quality, wrapped nicely, and presented with both hands. Avoid gifts of alcohol, pork products, or items bearing religious imagery from other faiths. AI agents advising on business etiquette should include these cultural specifics.
 
 Practical Considerations for AI Agents: Support Arabic language with appropriate formality levels (formal MSA for official communications, Gulf Arabic dialect for conversational interactions). Understand Saudi date conventions (Hijri calendar is used officially alongside Gregorian). Respect prayer times (Fajr, Dhuhr, Asr, Maghrib, Isha)—avoid scheduling meetings during prayer times and be aware that responses may be delayed during prayer periods. Recognise Saudi national holidays (Saudi National Day—23 September, Founding Day—22 February, Eid al-Fitr, Eid al-Adha) and adjust business expectations accordingly.`,
-    domain: 'gcc-intelligence',
+    domain: 'gcc-enterprise',
     source_type: 'best_practice',
     vertical: null,
     region: 'gcc',
@@ -1241,7 +1241,7 @@ CPEC and China-Pakistan Business: The China-Pakistan Economic Corridor, a $62 bi
 Language and Cultural Context: Pakistan's national language is Urdu, with English as the official language for government and business. Regional languages include Punjabi (48% of population), Pashto, Sindhi, Saraiki, and Balochi. AI agents must support Urdu (Nastaliq script—distinct from Arabic Naskh), handle Urdu-English code-mixing (common in urban communication), and ideally support major regional languages. Cultural considerations include Islamic values and practices (similar to GCC context but with South Asian cultural overlay), family-centric decision-making, and relationship-based business culture.
 
 For AI agent builders targeting Pakistan: prioritise mobile-first design (majority of internet access is via smartphone), support Urdu language with Nastaliq rendering, design for low-bandwidth environments (optimise for 3G/4G connections), price competitively (purchasing power is significantly lower than GCC markets), and focus on sectors with high impact and willingness to pay—fintech, agriculture, healthcare, and education.`,
-    domain: 'pakistan-intelligence',
+    domain: 'pakistan-enterprise',
     source_type: 'research',
     vertical: null,
     region: 'pakistan',
@@ -1267,7 +1267,7 @@ Regulatory Environment: The UAE Federal Data Protection Law (Federal Decree-Law 
 Corporate Tax: The UAE introduced a 9% corporate tax effective June 2023 for taxable income exceeding AED 375,000. Free zone companies retain 0% on qualifying income (income from transactions with other free zone entities or from foreign sources) but pay 9% on non-qualifying income. This makes the UAE corporate tax regime among the most competitive globally while addressing international pressure for minimum taxation (OECD BEPS Pillar Two).
 
 For AI agent builders: the UAE offers a favorable business environment with established digital infrastructure, government support for AI companies, access to GCC and broader MENA markets, a diverse multinational workforce, and strong connectivity to global markets. Key considerations include selecting the right jurisdiction (free zone vs. mainland), understanding data protection requirements, and supporting Arabic-English bilingual operations.`,
-    domain: 'gcc-intelligence',
+    domain: 'gcc-enterprise',
     source_type: 'best_practice',
     vertical: null,
     region: 'gcc',
@@ -1313,7 +1313,7 @@ Writing for Arab Audiences—Style Guidelines: Arabic formal writing uses longer
 Technical Arabic Text Processing Challenges: Right-to-left base direction with embedded left-to-right segments (numbers, Latin text) requires the Unicode Bidirectional Algorithm (UBA). Arabic shaping—letters change form based on position in the word and adjacent letters—requires proper shaping engines. Common rendering bugs include broken lam-alef ligature (لا), incorrect letter forms at word boundaries, and misordered mixed-direction text. Diacritical marks (tashkeel/harakat) are usually omitted in modern writing but are essential for disambiguation in certain contexts (Quran, children's texts, formal documents)—the same consonant sequence can represent different words depending on voweling. Search and matching must handle Arabic-specific issues: hamza variants (أ إ آ ء), taa marbuta vs. haa (ة vs. ه), and alef variants (ا أ إ آ).
 
 Font Selection: Arabic fonts come in two major calligraphic traditions—Naskh (standard, used for most printed Arabic) and Nastaliq (used for Urdu and Persian). For Arabic text, use high-quality Naskh fonts: Noto Naskh Arabic (Google, free, excellent coverage), Amiri (based on classic Bulaq typography), Cairo (modern geometric sans-serif Arabic), or Tajawal (clean, modern). Ensure fonts support all Arabic characters including Quranic symbols if serving religious content.`,
-    domain: 'gcc-intelligence',
+    domain: 'gcc-enterprise',
     source_type: 'howto',
     vertical: null,
     region: 'gcc',

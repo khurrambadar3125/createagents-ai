@@ -5,7 +5,7 @@ import withAuth from '@/lib/withAuth'
 const DOMAINS = [
   'ai-agents', 'healthcare', 'finance', 'legal', 'audit', 'government',
   'marketing', 'hr', 'education', 'operations', 'engineering',
-  'gcc-intelligence', 'pakistan-intelligence', 'sustainability', 'platform',
+  'gcc-enterprise', 'pakistan-enterprise', 'sustainability', 'platform',
 ]
 const SOURCE_TYPES = ['framework', 'regulation', 'textbook', 'case_study', 'best_practice', 'research', 'howto', 'glossary', 'faq']
 
