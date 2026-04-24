@@ -77,8 +77,43 @@ All JS is in a single `<script>` block at the end of the file. Key patterns:
 - **Accessibility** — reduced motion, RTL support
 - **Freemium model** with trial tracking and paywall
 
+## Memory Layer (Phase 1 — added 2026-04-24)
+
+Every agent now has persistent memory that survives across conversations. Memory is scoped to (agent_id, visitor_id).
+
+### Files
+- `lib/memory/memoryTool.js` — 6 command handlers (view, create, str_replace, insert, delete, rename) + path validation + audit logging + system prompt snippet
+- `pages/api/agents/run.js` — refactored with tool-use loop: Claude calls memory tool → handler executes → result fed back → Claude continues. Works for both streaming and standard responses.
+- `scripts/migration-memory-layer.sql` — 2 new tables (agent_memory_files, agent_memory_access_log) + RLS policies + auto-timestamp trigger
+- `tests/memory.test.js` — end-to-end test: store fact in session 1, recall in session 2
+
+### Tables (additive — existing tables untouched)
+- `agent_memory_files` — (agent_id, visitor_id, file_path, content, timestamps). Max 50 files per agent+visitor, max 10KB per file.
+- `agent_memory_access_log` — audit trail for every memory operation.
+
+### How It Works
+1. Every agent's system prompt now includes a memory protocol instruction telling Claude to check /memories at conversation start
+2. Claude can call the `memory` tool to view/create/edit/delete files in its memory directory
+3. The tool calls are handled server-side by `memoryTool.js` which reads/writes Supabase
+4. In streaming mode, tool calls happen silently before the final response streams to the user
+5. `visitor_id` parameter (optional) in the API request scopes memory per end-user. Defaults to 'default'.
+
+### Testing Locally
+```bash
+# 1. Run the migration in Supabase SQL Editor first
+# 2. Start dev server
+npm run dev
+# 3. Run the test
+node tests/memory.test.js
+```
+
+### Architecture Doc
+Full runtime architecture blueprint at `CREATEAGENT_RUNTIME_ARCHITECTURE.md`. This memory layer is Phase 1 of a 4-phase plan. Phases 2-4 (skills, recall, gateway, marketplace) are not yet built.
+
 ## Working With This Codebase
-- Since everything is in one file, use line-number ranges or search to navigate
-- CSS is at the top (~lines 1–1200), HTML structure (~1200–2250), JS data + logic (~2250–4900)
+- The landing page is a single `index.html` file (~4,900 lines)
+- The Next.js app (pages/, lib/) is the actual agent platform
+- CSS is at the top of index.html (~lines 1–1200), HTML structure (~1200–2250), JS data + logic (~2250–4900)
 - Changes to agent data, verticals, or personas only require editing the JS constants
-- No build step — edit and deploy directly
+- No build step for index.html — edit and deploy directly
+- Next.js pages require `npm run build` to verify
